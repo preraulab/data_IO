@@ -9,12 +9,7 @@
 %       filename: string or cell of strings - filename(s) -- required
 %       copy_file: logical - true: saves a copy of the file with
 %       '-deidentified' tag, false: overwrites file (default: true)
-%
-%   Output:
-%       spect: TxF matrix of spectral power
-%       stimes: 1xT vector of times for the center of the spectral bins
-%        sfreqs: 1xF vector of frequency bins for the spectrogram
-%  
+% 
 %   Copyright 2021 Michael J. Prerau, Ph.D. Laboratory - http://www.sleepEEG.org
 %
 %   Last modified 02/03/2021
