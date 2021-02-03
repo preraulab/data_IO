@@ -7,8 +7,7 @@
 %
 %   Input:
 %       filename: string or cell of strings - filename(s) -- required
-%       copy_file: logical - true: saves a copy of the file with
-%       '-deidentified' tag, false: overwrites file (default: true)
+%       copy_file: logia
 %
 %   Output:
 %       spect: TxF matrix of spectral power
@@ -21,11 +20,6 @@
 %% ********************************************************************
 
 function EDF_deidentify(filename, copy_file)
-%Sets default to copy file
-if nargin == 1
-    copy_file = true;
-end
-
 %Check to see if any file has been given
 if nargin == 0
     [filename, path] = uigetfile('*.*',...
