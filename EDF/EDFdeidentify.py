@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 from tkinter import *
 from tkinter import filedialog
@@ -20,33 +21,27 @@ root.withdraw()
 root.filenames = filedialog.askopenfilenames(initialdir="~/", title="Select EDF file(s)",
                                              filetypes=(("EDF files", "*.edf"), ("All files", "*.*")))
 # Handle file cancel
-print(root.filenames)
 if root.filenames == '':
-    print('Goodbye file cancel')
-    exit()
+    root.destroy()
+    sys.exit("Closing executable...")
 
 # Check if user wants to overwrite data
 copy_file = messagebox.askyesnocancel(title="EDF Deidentifier", message="Would you like to save the a copy of data?")
-print(copy_file)
 
 # Exit if cancel
 if copy_file is None:
-    print('Goodbye')
-    exit()
+    root.destroy()
+    sys.exit("Closing executable...")
 
 # Double check!
 if not copy_file:
     result = messagebox.askyesno(title="EDF Deidentifier", message="Are you sure you want to overwrite all files?")
     if not result:
-        print('Goodbye!')
-        exit()
-
-# Print filenames
-print(root.filenames)
+        root.destroy()
+        sys.exit("Closing executable...")
 
 # Loop through all file names
 for path in root.filenames:
-    print(path)  # Print current path
 
     # Skip if bad file
     if not (os.path.isfile(path)):
@@ -57,7 +52,6 @@ for path in root.filenames:
     if copy_file:
         file_savedir = filedialog.askdirectory()
         path_new = file_savedir + '/' + os.path.basename(path)[0:-4] + '_deidentified.edf'
-        print(path_new)
         shutil.copy(path, path_new)
         path = path_new
 
@@ -87,3 +81,6 @@ for path in root.filenames:
                 f.close()
             finally:
                 print('No valid encoding format found')
+
+    root.destroy()
+
