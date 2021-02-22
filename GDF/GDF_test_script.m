@@ -60,7 +60,7 @@ tic;
 save([file_name '.mat'],'Var_1','Var_2','Var_3','Var_4','Var_5','Var_6','-v7.3');
 load([file_name '.mat']);
 MATt = toc;
-disp(['GDF I/O in ' num2str(MATt) ' seconds']);
+disp(['MAT I/O in ' num2str(MATt) ' seconds']);
 
 disp(' ');
 pdiff = (MATt - GDFt) / ((MATt + GDFt)/2) * 100;
