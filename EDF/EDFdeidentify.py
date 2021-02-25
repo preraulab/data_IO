@@ -1,3 +1,5 @@
+# This software is distributed under the MIT License: https://mit-license.org/
+
 import os
 import sys
 import shutil
