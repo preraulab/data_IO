@@ -63,7 +63,7 @@ MATt = toc;
 disp(['MAT I/O in ' num2str(MATt) ' seconds']);
 
 disp(' ');
-pdiff = (MATt - MBFt) / MBFt * 100;
+pdiff = (MBFt - MATt) / MBFt * 100;
 disp(['Speed up of ' num2str(pdiff) '%']);
 
 %Delete test files
