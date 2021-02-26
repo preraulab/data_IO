@@ -52,8 +52,8 @@ var_types{6} = 'structure';
 tic;
 MBFwrite([file_name '.mbf'], vars, var_names, var_types, file_info);
 [hdr, out] = MBFread([file_name '.mbf']);
-GDFt = toc;
-disp(['MBF I/O in ' num2str(GDFt) ' seconds']);
+MBFt = toc;
+disp(['MBF I/O in ' num2str(MBFt) ' seconds']);
 
 %Mat write test
 tic;
@@ -63,7 +63,7 @@ MATt = toc;
 disp(['MAT I/O in ' num2str(MATt) ' seconds']);
 
 disp(' ');
-pdiff = (MATt - GDFt) / ((MATt + GDFt)/2) * 100;
+pdiff = (MATt - MBFt) / MBFt * 100;
 disp(['Speed up of ' num2str(pdiff) '%']);
 
 %Delete test files
