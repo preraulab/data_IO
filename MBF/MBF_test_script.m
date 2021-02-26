@@ -67,7 +67,7 @@ pdiff = (MATt - MBFt) / MBFt * 100;
 disp(['Speed up of ' num2str(pdiff) '%']);
 
 %Delete test files
-% delete([file_name '.gdf']);
-% delete([file_name '.mat']);
+delete([file_name '.mbf']);
+delete([file_name '.mat']);
 
 
