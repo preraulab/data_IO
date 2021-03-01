@@ -46,7 +46,7 @@
 %   Last modified 02/22/2021
 %% ********************************************************************
 
-function [hdr, out] = MBFread(filename)
+function [header, out] = MBFread(filename)
 %Open the file for writing
 fileID = fopen(filename,'r');
 
@@ -78,10 +78,10 @@ for ii = 1:num_vars
 end
 
 %Construct the header structure
-hdr.file_info = file_info;
-hdr.var_names = var_names;
-hdr.var_dims = var_dims;
-hdr.var_types = var_types;
+header.file_info = file_info;
+header.var_names = var_names;
+header.var_dims = var_dims;
+header.var_types = var_types;
 
 %Read the data only if the output is selected
 if nargout == 2
@@ -121,14 +121,14 @@ if nargout == 2
             var_data = intrange2num(idx_data, data_type, data_range);
             eval([var_names{ii} ' = double(var_data);']);
             
-            hdr.var_types{ii} = ['double (' hdr.var_types{ii} ')'];
+            header.var_types{ii} = ['double (' header.var_types{ii} ')'];
         else %Convert back from byteStream
             var_data = fread(fileID, var_dims{ii} , 'uint8', 'ieee-le');
             eval([var_names{ii} ' = getArrayFromByteStream(uint8(var_data));']);
             
             %Get the data type
             eval(['dtype = class(' var_names{ii} ');']);
-            hdr.var_types{ii} = [dtype ' (byteStream)'];
+            header.var_types{ii} = [dtype ' (byteStream)'];
         end
         
         eval(['out{' num2str(ii) '} = ' var_names{ii} ';']);
