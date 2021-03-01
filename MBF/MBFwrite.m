@@ -30,6 +30,10 @@ function MBFwrite(filename, vars, var_names, var_types, file_info)
 %             Line 3 (n-1)*3+7: Data type (e.g. 'single','double', 'uint18','char')
 %             Line 4 (n-1)*3+8: blank
 %
+%         NOTE: If the data type is indexed to an integer, the data-type will be
+%         followed by a range (physical min/max) in brackets (e.g. [-3000 3000]).
+%         If the data passed are double, then they will be converted automatically.
+%
 %     Data Section:
 %         For each variable, the data are written in the specified type in binary (IEEE little endian).
 %
@@ -69,15 +73,35 @@ fprintf(fileID, '%s\n\n', num2str(num_vars)); %Number of variables
 for ii = 1:num_vars
     fprintf(fileID, '%s\n', var_names{ii}); %Variable name
     
-    %Check to see if it needs to be converted
-    if ~isIOdatatype(var_types{ii})
+    %Check to see if it needs to be converted to bytestrem
+    if contains(var_types{ii},'[') && contains(var_types{ii},']') && isa(vars{ii},'double') || isa(vars,'single')
+        dstring = var_types{ii};
+        
+        %Extract data and range
+        data_type = dstring(1:strfind(dstring,'[')-2);
+        data_range = str2num(dstring(strfind(dstring,'['):end));
+        
+        if ~isinttype(data_type)
+            error(['Invalid indexed int data type: ' data_type '. Must be u/int/8/16/32/64.']);
+        end
+        
+        %Convert to indexed form
+        vars{ii} = num2intrange(vars{ii}, data_type, data_range);
+        
+        fprintf(fileID, '%s\n', var_dims{ii});
+        fprintf(fileID, '%s\n', var_types{ii});
+        
+        %Replace in cell array for writing
+        var_types{ii} = data_type;
+        
+    elseif ~isIOdatatype(var_types{ii})
         byteStream = getByteStreamFromArray(vars{ii});
         dimstr = ['1x' num2str(length(byteStream)) ' (' var_dims{ii} ')' ];
         fprintf(fileID, [dimstr '\n']);
         fprintf(fileID, ['byteStream (' var_types{ii} ')\n']);
         
         %Display warning when writing
-        warning(['Converting ' var_names{ii} ' from ' var_types{ii} ' to byteStream']);
+        %warning(['Converting ' var_names{ii} ' from ' var_types{ii} ' to byteStream']);
         var_types{ii} = 'byteStream';
     else
         fprintf(fileID, '%s\n', var_dims{ii});
@@ -94,7 +118,7 @@ for ii = 1:num_vars
         elseif length(var_dims{ii})>2
             fwrite(fileID, reshape(vars{ii}, 1, numel(vars{ii})), var_types{ii}, 'ieee-le');
         else
-            error('Variables must have a ndims>1');
+            error('Variables must have a number of dimensions >1');
         end
     else
         %byteStreams are uint8
@@ -120,10 +144,6 @@ nativetypes = ...
     'int16',...
     'int32',...
     'int64',...
-    'integer*1',...
-    'integer*2',...
-    'integer*4',...
-    'integer*8',...
     'schar',...
     'signed char',...
     'short',...
@@ -132,10 +152,89 @@ nativetypes = ...
     'float',...
     'float32',...
     'float64',...
-    'real*4',...
-    'real*8',...
     'char'...
+    'bit',...
+    'ubit',...
     'single'};
 
 typestr = lower(typestr);
-result = any(strcmpi(typestr, nativetypes)) || contains(typestr,'bit') || contains(typestr,'ubit');
+result = any(contains(typestr, nativetypes));
+
+function out = num2intrange(values, data_type, data_range)
+%NUM2INTRANGE  Converts data to an integer range data type
+%
+%   Usage:
+%   Direct input:
+%       out = num2intrange(values, data_type, data_range)
+%
+%   Input:
+%       values: 1xN vector of data values 
+%       data_type: string - valid int data type: u/int/8/16/32/64
+%       data_range: 1x2 max/min values for data (physical min/max)
+%
+%   Output:
+%       out: 1xN vector of data values index in type data_type
+%
+%   Example:
+%         data_types = {'uint8', 'int8', 'int32', 'int64'}; %Select data type
+%         data_range = [-3000,3000]; %Define data range
+% 
+%         %Create random data spanning range
+%         vals = rand(1,10000)*diff(data_range)+data_range(1); 
+% 
+%         %Loop through several data types to show precision errors
+%         for ii = 1:length(data_types)
+%             %Select data type
+%             data_type = data_types{ii};
+% 
+%             %Convert data to index
+%             idx_vals = num2intrange(vals, data_type, data_range);
+%             dbl_vals = intrange2num(idx_vals, data_type, data_range);
+% 
+%             disp(['MSE precision error for ' data_type ': ' num2str(mean(dbl_vals - vals))]);
+%         end
+%
+%   Copyright 2021 Michael J. Prerau Laboratory. - http://www.sleepEEG.org
+%   Authors: Michael J. Prerau, Ph.D.
+%
+%   Last modified 03/01/2021
+%% ********************************************************************
+%Get data type index range
+if isinttype(data_type) %Check if valid int type
+    index_range = cast([intmin(data_type) intmax(data_type)],'like',values);
+else
+    error('Invalid int data type');
+end
+
+%Check that data range is valid
+data_range = cast(data_range,'like',values);
+if ~issorted(data_range)
+    error('Data range (physical min/max) values must be monotonically increasing');
+end
+
+%Give clipping warning
+if max(values)> data_range(2) || min(values)<data_range(1)
+    warning('Data exceeds specified range, clipping will occur.');
+end
+
+%Perform conversion in type value
+out = (values - data_range(1))/diff(data_range)*diff(index_range) + index_range(1);
+
+%Convert to desired data type for quantizing
+out = cast(out,data_type);
+
+%Checks to see if there is a valid int-based datatype
+function result = isinttype(typestr)
+nativetypes = ...
+    {'uint',...
+    'uint8',...
+    'uint16',...
+    'uint32',...
+    'uint64',...
+    'int8',...
+    'int16',...
+    'int32',...
+    'int64'};
+
+result = any(strcmpi(typestr, nativetypes));
+

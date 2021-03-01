@@ -1,4 +1,4 @@
-%MBFREAD  Reads a file in Multivariable Binar Format
+%MBFREAD  Reads a file in Multivariable Binary Format
 %
 %   Usage:
 %   Direct input:
@@ -13,26 +13,30 @@
 %
 %
 %     ******* MBF Data Specs *************
-% 
-%     The MBF data format is broken into two sections: 
+%
+%     The MBF data format is broken into two sections:
 %         A header section, which is line-by-line ascii, and designed to be easily readable
 %         A data section, which is binary
-% 
+%
 %     Header:
 %         Line 1: File info - This is the filename by default but can contain any relevant information
 %         Line 2: blank
-%         Line 3: Number of variables 
+%         Line 3: Number of variables
 %         Line 4: blank
-% 
+%
 %         For each variable, the data are described as
 %             Line 1 (n-1)*3+5: Variable name (e.g. 'My_Var', 'thisVar')
 %             Line 2 (n-1)*3+6: Data dimensions (format: AxBxC..., e.g. '1x3', '12x4x234')
 %             Line 3 (n-1)*3+7: Data type (e.g. 'single','double', 'uint18','char')
 %             Line 4 (n-1)*3+8: blank
-% 
+%
+%         NOTE: If the data type is indexed to an integer, the data-type will be
+%         followed by a range (physical min/max) in brackets (e.g. [-3000 3000]).
+%         If the data passed are double, then they will be converted automatically.
+%
 %     Data Section:
 %         For each variable, the data are written in the specified type in binary (IEEE little endian).
-% 
+%
 %         NOTE: Variables can be any set of acceptable MATLAB data type. Native IO data types (e.g. double, uint18, char)
 %         will be written as specified but others (e.g. table, struct, cell array, etc.) will be converted into
 %         serialized uint8 byteStream format.
@@ -84,19 +88,47 @@ if nargout == 2
     out = cell(1, num_vars);
     
     for ii = 1:num_vars
-        %Convert from byteStream if it is not a native data type
-        if isnativetype(var_types{ii})
-            if length(var_dims{ii}) == 2           
+        %Convert from indexed or byteStream if it is not a native data type
+        if isnativetype(var_types{ii}) && ~contains(var_types{ii},'[')
+            
+            if length(var_dims{ii}) == 2
                 var_data = fread(fileID, var_dims{ii} , var_types{ii}, 'ieee-le');
             else
                 var_data = fread(fileID, prod(var_dims{ii}), var_types{ii}, 'ieee-le');
                 var_data = reshape(var_data, var_dims{ii});
             end
-            
             eval([var_names{ii} ' = ' var_types{ii} '(var_data);']);
-        else
+        elseif contains(var_types{ii},'[') && contains(var_types{ii},']')
+            dstring = var_types{ii};
+            
+            %Extract data and range
+            data_type = dstring(1:strfind(dstring,'[')-2);
+            data_range = str2num(dstring(strfind(dstring,'['):end));
+            
+            if ~isinttype(data_type)
+                error(['Invalid indexed int data type: ' data_type '. Must be u/int/8/16/32/64.']);
+            end
+            
+            %Read in indexed
+            if length(var_dims{ii}) == 2
+                idx_data = fread(fileID, var_dims{ii} , data_type, 'ieee-le');
+            else
+                idx_data = fread(fileID, prod(var_dims{ii}), data_type, 'ieee-le');
+                idx_data = reshape(idx_data, var_dims{ii});
+            end
+            
+            %Convert back to double
+            var_data = intrange2num(idx_data, data_type, data_range);
+            eval([var_names{ii} ' = double(var_data);']);
+            
+            hdr.var_types{ii} = ['double (' hdr.var_types{ii} ')'];
+        else %Convert back from byteStream
             var_data = fread(fileID, var_dims{ii} , 'uint8', 'ieee-le');
             eval([var_names{ii} ' = getArrayFromByteStream(uint8(var_data));']);
+            
+            %Get the data type
+            eval(['dtype = class(' var_names{ii} ');']);
+            hdr.var_types{ii} = [dtype ' (byteStream)'];
         end
         
         eval(['out{' num2str(ii) '} = ' var_names{ii} ';']);
@@ -123,10 +155,6 @@ nativetypes = ...
     'int16',...
     'int32',...
     'int64',...
-    'integer*1',...
-    'integer*2',...
-    'integer*4',...
-    'integer*8',...
     'schar',...
     'signed char',...
     'short',...
@@ -135,12 +163,85 @@ nativetypes = ...
     'float',...
     'float32',...
     'float64',...
-    'real*4',...
-    'real*8',...
     'char',...
     'single'};
 
 typestr = lower(typestr);
-result = any(strcmpi(typestr, nativetypes)) || contains(typestr,'bit') || contains(typestr,'ubit');
+result = any(contains(typestr, nativetypes)) || contains(typestr,'bit') || contains(typestr,'ubit');
 
+function out = intrange2num(index_values, data_type, data_range)
+%INTRANGE2NUM  Converts index data in an integer range data type back to
+%double
+%
+%   Usage:
+%   Direct input:
+%       out = intrange2num(index_values, data_type, data_range)
+%
+%   Input:
+%       index_values: 1xN vector of index values
+%       data_type: string - valid int data type: u/int/8/16/32/64
+%       data_range: 1x2 max/min values for data (physical min/max)
+%
+%   Output:
+%       out: 1xN vector of double - converted data values
+%
+%   Example:
+%         data_types = {'uint8', 'int8', 'int32', 'int64'}; %Select data type
+%         data_range = [-3000,3000]; %Define data range
+%
+%         %Create random data spanning range
+%         vals = rand(1,10000)*diff(data_range)+data_range(1);
+%
+%         %Loop through several data types to show precision errors
+%         for ii = 1:length(data_types)
+%             %Select data type
+%             data_type = data_types{ii};
+%
+%             %Convert data to index
+%             idx_vals = num2intrange(vals, data_type, data_range);
+%             dbl_vals = intrange2num(idx_vals, data_type, data_range);
+%
+%             disp(['MSE precision error for ' data_type ': ' num2str(mean(dbl_vals - vals))]);
+%         end
+%
+%   Copyright 2021 Michael J. Prerau Laboratory. - http://www.sleepEEG.org
+%   Authors: Michael J. Prerau, Ph.D.
+%
+%   Last modified 03/01/2021
+%% ********************************************************************
+
+%Cast back into double for precision
+index_values = double(index_values);
+
+%Get data type index range
+if isinttype(data_type) %Check if valid int type
+    index_range = double([intmin(data_type) intmax(data_type)]);
+else
+    error('Invalid int data type');
+end
+
+%Check that data range is valid
+data_range = double(data_range);
+if ~issorted(data_range)
+    error('Data range (physical min/max) values must be monotonically increasing');
+end
+
+%Revert to original values
+out = (index_values - index_range(1))/diff(index_range)*diff(data_range)+data_range(1);
+
+
+%Checks to see if there is a valid int-based datatype
+function result = isinttype(typestr)
+nativetypes = ...
+    {'uint',...
+    'uint8',...
+    'uint16',...
+    'uint32',...
+    'uint64',...
+    'int8',...
+    'int16',...
+    'int32',...
+    'int64'};
+
+result = any(strcmpi(typestr, nativetypes));
 

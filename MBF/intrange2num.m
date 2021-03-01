@@ -1,0 +1,78 @@
+function out = intrange2num(index_values, data_type, data_range)
+%INTRANGE2NUM  Converts index data in an integer range data type back to
+%double
+%
+%   Usage:
+%   Direct input:
+%       out = intrange2num(index_values, data_type, data_range)
+%
+%   Input:
+%       index_values: 1xN vector of index values
+%       data_type: string - valid int data type: u/int/8/16/32/64
+%       data_range: 1x2 max/min values for data (physical min/max)
+%
+%   Output:
+%       out: 1xN vector of double - converted data values 
+%
+%   Example:
+%         data_types = {'uint8', 'int8', 'int32', 'int64'}; %Select data type
+%         data_range = [-3000,3000]; %Define data range
+% 
+%         %Create random data spanning range
+%         vals = rand(1,10000)*diff(data_range)+data_range(1); 
+% 
+%         %Loop through several data types to show precision errors
+%         for ii = 1:length(data_types)
+%             %Select data type
+%             data_type = data_types{ii};
+% 
+%             %Convert data to index
+%             idx_vals = num2intrange(vals, data_type, data_range);
+%             dbl_vals = intrange2num(idx_vals, data_type, data_range);
+% 
+%             disp(['MSE precision error for ' data_type ': ' num2str(mean(dbl_vals - vals))]);
+%         end
+%
+%   Copyright 2021 Michael J. Prerau Laboratory. - http://www.sleepEEG.org
+%   Authors: Michael J. Prerau, Ph.D.
+%
+%   Last modified 03/01/2021
+%% ********************************************************************
+
+%Cast back into double for precision
+index_values = double(index_values);
+
+%Get data type index range
+if isinttype(data_type) %Check if valid int type
+    index_range = double([intmin(data_type) intmax(data_type)]);
+else
+    error('Invalid int data type');
+end
+
+%Check that data range is valid
+data_range = double(data_range);
+if ~issorted(data_range)
+    error('Data range (physical min/max) values must be monotonically increasing');
+end
+
+%Revert to original values
+out = (index_values - index_range(1))/diff(index_range)*diff(data_range)+data_range(1);
+
+end
+
+
+%Checks to see if there is a valid int-based datatype
+function result = isinttype(typestr)
+nativetypes = ...
+    {'uint',...
+    'uint8',...
+    'uint16',...
+    'uint32',...
+    'uint64',...
+    'int8',...
+    'int16',...
+    'int32',...
+    'int64'};
+
+result = any(strcmpi(typestr, nativetypes));
+end
