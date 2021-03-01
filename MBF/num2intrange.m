@@ -33,7 +33,7 @@ function out = num2intrange(values, data_type, data_range)
 %         end
 %
 %   Copyright 2021 Michael J. Prerau Laboratory. - http://www.sleepEEG.org
-%   Authors: Michael J. Prerau, Ph.D.
+%   Author: Michael J. Prerau, Ph.D.
 %
 %   Last modified 03/01/2021
 %% ********************************************************************
