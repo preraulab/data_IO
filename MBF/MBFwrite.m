@@ -213,7 +213,7 @@ if ~issorted(data_range)
 end
 
 %Give clipping warning
-if max(values)> data_range(2) || min(values)<data_range(1)
+if max(values)> data_range(2) | min(values)<data_range(1)
     warning('Data exceeds specified range, clipping will occur.');
 end
 
