@@ -88,12 +88,6 @@ for ii = 1:num_vars
         %Convert to indexed form
         vars{ii} = num2intrange(vars{ii}, data_type, data_range);
         
-        fprintf(fileID, '%s\n', var_dims{ii});
-        fprintf(fileID, '%s\n', var_types{ii});
-        
-        %Replace in cell array for writing
-        var_types{ii} = data_type;
-        
     elseif ~isIOdatatype(var_types{ii})
         byteStream = getByteStreamFromArray(vars{ii});
         dimstr = ['1x' num2str(length(byteStream)) ' (' var_dims{ii} ')' ];
@@ -101,7 +95,7 @@ for ii = 1:num_vars
         fprintf(fileID, ['byteStream (' var_types{ii} ')\n']);
         
         %Display warning when writing
-        %warning(['Converting ' var_names{ii} ' from ' var_types{ii} ' to byteStream']);
+        warning(['Converting ' var_names{ii} ' from ' var_types{ii} ' to byteStream']);
         var_types{ii} = 'byteStream';
     else
         fprintf(fileID, '%s\n', var_dims{ii});
@@ -210,11 +204,6 @@ end
 data_range = cast(data_range,'like',values);
 if ~issorted(data_range)
     error('Data range (physical min/max) values must be monotonically increasing');
-end
-
-%Give clipping warning
-if max(values)> data_range(2) || min(values)<data_range(1)
-    warning('Data exceeds specified range, clipping will occur.');
 end
 
 %Perform conversion in type value

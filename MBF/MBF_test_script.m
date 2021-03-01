@@ -5,7 +5,7 @@ clc;
 file_name = 'test_file';
 file_info = 'This is the file info section';
 
-%Create variables
+%Create EEG-like data
 Fs = 200;
 hrs = 3;
 chans = 6;
@@ -44,9 +44,15 @@ var_types{5} = 'table';
 Var_6.field1 = 'field 1';
 Var_6.field2 = 23498;
 Var_6.field3 = 1:1000;
-vars{6} = Var_5;
+vars{6} = Var_6;
 var_names{6} = 'Var_6';
 var_types{6} = 'structure';
+
+Var_7 = rand(1,10000)*6000-3000;
+vars{7} = Var_7;
+var_names{7} = 'Var_7';
+var_types{7} = 'int16 [-3000 3000]';
+
 
 %GDF write test
 tic;
@@ -67,7 +73,7 @@ pdiff = (MATt - MBFt) / MBFt * 100;
 disp(['Speed up of ' num2str(pdiff) '%']);
 
 %Delete test files
-delete([file_name '.mbf']);
-delete([file_name '.mat']);
+% delete([file_name '.mbf']);
+% delete([file_name '.mat']);
 
 
