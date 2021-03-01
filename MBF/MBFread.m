@@ -42,6 +42,7 @@
 %         serialized uint8 byteStream format.
 %
 %   Copyright 2021 Michael J. Prerau Laboratory. - http://www.sleepEEG.org
+%   Author: Michael J. Prerau, Ph.D.
 %
 %   Last modified 02/22/2021
 %% ********************************************************************
