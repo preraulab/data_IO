@@ -58,6 +58,7 @@ vars{7} = Var_7;
 var_names{7} = 'Var_7';
 var_types{7} = 'int16 [-3000 3000]';
 
+%% Perform test
 
 %GDF write test
 tic;
