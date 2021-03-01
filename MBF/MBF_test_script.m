@@ -5,7 +5,9 @@ clc;
 file_name = 'test_file';
 file_info = 'This is the file info section';
 
-%% Create EEG-like data
+%% CREATE SAMPLE DATA
+
+%Create EEG-like data
 Fs = 200;
 hrs = 3;
 chans = 6;
@@ -15,25 +17,25 @@ vars{1} = Var_1;
 var_names{1} = 'Var_1';
 var_types{1} = 'double';
 
-%% N-D single data
+% N-D single data
 Var_2 = single(randn(1,10,3,2,9));
 vars{2} = Var_2;
 var_names{2} = 'Var_2';
 var_types{2} = 'single';
 
-%% String data
+% String data
 Var_3 = 'This is my string variable';
 vars{3} = Var_3;
 var_names{3} = 'Var_3';
 var_types{3} = 'char';
 
-%% Cell array data
+% Cell array data
 Var_4 = {1,'234',34.5343,randn(3)};
 vars{4} = Var_4;
 var_names{4} = 'Var_4';
 var_types{4} = 'cell';
 
-%% Structure data
+% Structure data
 LastName = {'Sanchez';'Johnson';'Li';'Diaz';'Brown'};
 Age = [38;43;38;40;49];
 Smoker = logical([1;0;1;0;1]);
@@ -52,13 +54,13 @@ vars{6} = Var_6;
 var_names{6} = 'Var_6';
 var_types{6} = 'structure';
 
-%% Int indexed data
+% Int indexed data
 Var_7 = rand(3,10000)*6000-3000;
 vars{7} = Var_7;
 var_names{7} = 'Var_7';
 var_types{7} = 'int16 [-3000 3000]';
 
-%% Perform test
+%% PERFORM IO TEST
 
 %GDF write test
 tic;
