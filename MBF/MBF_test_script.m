@@ -65,20 +65,32 @@ var_types{7} = 'int16 [-3000 3000]';
 %GDF write test
 tic;
 MBFwrite([file_name '.mbf'], vars, var_names, var_types, file_info);
+MBF_write = toc;
+disp(['MBF write in ' num2str(MBF_write) ' seconds']);
+
+tic;
 [hdr, out] = MBFread([file_name '.mbf']);
-MBFt = toc;
-disp(['MBF I/O in ' num2str(MBFt) ' seconds']);
+MBF_read = toc;
+disp(['MBF read in ' num2str(MBF_read) ' seconds']);
+
+disp(' ');
 
 %Mat write test
 tic;
 save([file_name '.mat'],'Var_1','Var_2','Var_3','Var_4','Var_5','Var_6','-v7.3');
+MAT_write = toc;
+disp(['MAT write in ' num2str(MAT_write) ' seconds']);
+
+tic;
 load([file_name '.mat']);
-MATt = toc;
-disp(['MAT I/O in ' num2str(MATt) ' seconds']);
+MAT_read = toc;
+disp(['MAT read in ' num2str(MAT_read) ' seconds']);
 
 disp(' ');
-pdiff = (MATt - MBFt) / MBFt * 100;
-disp(['Speed up of ' num2str(pdiff) '%']);
+pdiff = (MAT_read - MBF_read) / MBF_read * 100;
+disp(['Read speed up of ' num2str(pdiff) '%']);
+pdiff = (MAT_write - MBF_write) / MBF_read * 100;
+disp(['Write speed up of ' num2str(pdiff) '%']);
 
 %Delete test files
 delete([file_name '.mbf']);
