@@ -178,9 +178,9 @@ else
         signalsIdx, records, dataRecordDuration, false);
 end
 
-if (isempty(records))
-    records = 1:size(data,1);
-end
+% if (isempty(records))
+%     records = 1:size(data,1);
+% end
 
 % Time Table computations
 if (any(annotationExist))
