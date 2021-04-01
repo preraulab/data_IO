@@ -8,57 +8,72 @@ file_info = 'This is the file info section';
 %% CREATE SAMPLE DATA
 
 %Create EEG-like data
-Fs = 200;
-hrs = 3;
-chans = 6;
+% Fs = 500;
+% hrs = 8;
+% chans = 129;
 
-Var_1 = randn(Fs*3600*hrs, chans);
+spect_dim = [551581, 308];
+
+Var_1 = single(randn(spect_dim(1), spect_dim(2)));
 vars{1} = Var_1;
-var_names{1} = 'Var_1';
-var_types{1} = 'double';
+var_names{1} = 'spect';
+var_types{1} = 'single';
 
 % N-D single data
-Var_2 = single(randn(1,10,3,2,9));
+Var_2 = randn(1,spect_dim(1));
 vars{2} = Var_2;
-var_names{2} = 'Var_2';
-var_types{2} = 'single';
+var_names{2} = 'stimes';
+var_types{2} = 'double';
 
-% String data
-Var_3 = 'This is my string variable';
+% N-D single data
+Var_3 = randn(1,spect_dim(2));
 vars{3} = Var_3;
-var_names{3} = 'Var_3';
-var_types{3} = 'char';
+var_names{3} = 'sfreqs';
+var_types{3} = 'double';
 
-% Cell array data
-Var_4 = {1,'234',34.5343,randn(3)};
+% N-D single data
+Var_4 = randn(1,spect_dim(1));
 vars{4} = Var_4;
-var_names{4} = 'Var_4';
-var_types{4} = 'cell';
+var_names{4} = 'stages_in_stimes';
+var_types{4} = 'double';
 
-% Structure data
-LastName = {'Sanchez';'Johnson';'Li';'Diaz';'Brown'};
-Age = [38;43;38;40;49];
-Smoker = logical([1;0;1;0;1]);
-Height = [71;69;64;67;64];
-Weight = [176;163;131;133;119];
-BloodPressure = [124 93; 109 77; 125 83; 117 75; 122 80];
-Var_5 = table(LastName,Age,Smoker,Height,Weight,BloodPressure);
-vars{5} = Var_5;
-var_names{5} = 'Var_5';
-var_types{5} = 'table';
 
-Var_6.field1 = 'field 1';
-Var_6.field2 = 23498;
-Var_6.field3 = 1:1000;
-vars{6} = Var_6;
-var_names{6} = 'Var_6';
-var_types{6} = 'structure';
-
-% Int indexed data
-Var_7 = rand(3,10000)*6000-3000;
-vars{7} = Var_7;
-var_names{7} = 'Var_7';
-var_types{7} = 'int16 [-3000 3000]';
+% % String data
+% Var_3 = 'This is my string variable';
+% vars{3} = Var_3;
+% var_names{3} = 'Var_3';
+% var_types{3} = 'char';
+% 
+% % Cell array data
+% Var_4 = {1,'234',34.5343,randn(3)};
+% vars{4} = Var_4;
+% var_names{4} = 'Var_4';
+% var_types{4} = 'cell';
+% 
+% % Structure data
+% LastName = {'Sanchez';'Johnson';'Li';'Diaz';'Brown'};
+% Age = [38;43;38;40;49];
+% Smoker = logical([1;0;1;0;1]);
+% Height = [71;69;64;67;64];
+% Weight = [176;163;131;133;119];
+% BloodPressure = [124 93; 109 77; 125 83; 117 75; 122 80];
+% Var_5 = table(LastName,Age,Smoker,Height,Weight,BloodPressure);
+% vars{5} = Var_5;
+% var_names{5} = 'Var_5';
+% var_types{5} = 'table';
+% 
+% Var_6.field1 = 'field 1';
+% Var_6.field2 = 23498;
+% Var_6.field3 = 1:1000;
+% vars{6} = Var_6;
+% var_names{6} = 'Var_6';
+% var_types{6} = 'structure';
+% 
+% % Int indexed data
+% Var_7 = rand(3,10000)*6000-3000;
+% vars{7} = Var_7;
+% var_names{7} = 'Var_7';
+% var_types{7} = 'int16 [-3000 3000]';
 
 %% PERFORM IO TEST
 
@@ -77,7 +92,8 @@ disp(' ');
 
 %Mat write test
 tic;
-save([file_name '.mat'],'Var_1','Var_2','Var_3','Var_4','Var_5','Var_6','-v7.3');
+% save([file_name '.mat'],'Var_1','Var_2','Var_3','Var_4','Var_5','Var_6','-v7.3');
+save([file_name '.mat'],'Var_1','Var_2','Var_3','Var_4','-v7.3');
 MAT_write = toc;
 disp(['MAT write in ' num2str(MAT_write) ' seconds']);
 
