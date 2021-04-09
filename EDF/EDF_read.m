@@ -1,26 +1,32 @@
+
 function [header, data, annotations] = EDF_read(filename,varargin)
-%EDF_read Read data from the EDF or EDF+ file (MJP edited from edfread)
-%   [HEADER, DATA, ANNOTATIONS] = EDFREAD(FILENAME) reads signal data from each record in the
+%edfread Read data from the EDF or EDF+ file
+%   DATA = EDF_read(FILENAME) reads signal data from each record in the
 %   EDF or EDF+ file specified in FILENAME. DATA is returned as a
 %   timetable. Each row of DATA is a record and each variable is a signal.
 %   RowTimes of the timetable correspond to the start time of each data
 %   record relative to the start time of the file recording.
 %
-%   [HEADER, DATA, ANNOTATIONS] = EDFREAD(...,'SelectedSignals',SIGNAMES) reads from FILENAME
+%   DATA = EDF_read(...,'SelectedSignals',SIGNAMES) reads from FILENAME
 %   the signals whose names are specified in the string vector SIGNAMES.
 %   DATA is a timetable with a variable for each of the names specified in
 %   SIGNAMES. If SIGNAMES is not specified, EDFREAD reads the data of all
 %   the signals in the EDF or EDF+ file.
 %
-%   [HEADER, DATA, ANNOTATIONS] = EDFREAD(...,'SelectedDataRecords',RECORDINDICES) reads from
+%   DATA = EDF_read(...,'SelectedDataRecords',RECORDINDICES) reads from
 %   FILENAME the data records specified in the vector RECORDINDICES. The
 %   integers in RECORDINDICES must be unique and strictly increasing.
 %   DATA is a timetable with number of rows equal to the number of indices
 %   specified in RECORDINDICES. If RECORDINDICES is not specified, EDFREAD
 %   reads all the data records in the EDF or EDF+ file.
+
+%   DATA = EDF_read(...,'TimeOutputType',TTYPE) specifies time output type,
+%   TTYPE, as 'duration' or 'datetime'. If TTYPE is specified as
+%   'duration', the times in DATA are returned as durations. If TTYPE is
+%   specified as 'datetime', the times in DATA are returned as datetimes.
+%   If TTYPE is not specified, 'TimeOutputType' defaults to 'duration'.
 %
-%
-%   [HEADER, DATA, ANNOTATIONS] = = EDFREAD(...) also returns a timetable with any
+%   [DATA ANNOTATIONS] = EDF_read(...) also returns a timetable with any
 %   annotations present in the data records. The ANNOTATIONS timetable
 %   contains these variables:
 %
@@ -39,18 +45,18 @@ function [header, data, annotations] = EDF_read(filename,varargin)
 %
 %   % Example 1:
 %      % Read all the signal data from the EDF file example.edf
-%      hdr = EDF_read('example.edf')
+%      data = edfread('example.edf')
 %
 %   % Example 2:
 %      % Read the data for the signal "ECG" in the EDF file example.edf
-%      [hdr,data,annotations] = EDF_read('example.edf','SelectedSignals',"ECG")
+%      [data,annotations] = edfread('example.edf','SelectedSignals',"ECG")
 %
 %   % Example 3:
 %      % Read the first, third, and fifth data records of the EDF file
 %      % example.edf
-%      [hdr, data] = EDF_read('example.edf','SelectedDataRecords',[1 3 5])
+%      data = edfread('example.edf','SelectedDataRecords',[1 3 5])
 %
-%   See also EDFREAD, EDFINFO.
+%   See also EDFINFO.
 
 %   References:
 % 	  [1] Bob Kemp, Alpo Värri, Agostinho C. Rosa, Kim D. Nielsen, and
@@ -70,7 +76,8 @@ narginchk(1,9);
 [filename, varargin{:}] = convertStringsToChars(filename, varargin{:});
 
 % Parse Name-Value pairs
-[timeFormat, signals,  tempRecords] = parseInputs(filename,varargin{:});
+[~, timeFormat, signals,...
+    tempRecords] = parseInputs(filename,varargin{:});
 
 % Error out when the file extension is not .edf/.EDF
 [~, ~, ext] = fileparts(filename);
@@ -79,7 +86,7 @@ if ~strcmpi(ext,'.edf')
 end
 
 % Get file ID based on the file name.
-[fid, fileInfo] = openFile(filename);
+[fid, fileInfo] = signal.internal.edf.openFile(filename);
 
 % Close the opened file using onCleanup
 cleanup = onCleanup(@() fclose(fid));
@@ -91,31 +98,25 @@ try
         sigLabels, transducerType, physicalDimension, physicalMinimum,...
         physicalMaximum, digitalMinimum, digitalMaximum, prefilter,...
         numSamples, sigReserve] = readHeader(fid);
-    
 catch
     error(message('signal:edf:EDFFileNotCompliant', filename));
 end
+%
+% % Validate EDF/EDF+ files
+% signal.internal.edf.validateEDF(filename, fileInfo, version, startDate, startTime,...
+%     headerBytes, reserve, numDataRecords, numSignals,...
+%     sigLabels, numSamples, transducerType, physicalDimension,...
+%     physicalMinimum, physicalMaximum, digitalMinimum, digitalMaximum, ...
+%     prefilter, sigReserve, dataRecordDuration, mfilename);
 
-% Validate EDF/EDF+ files
-validateEDF(filename, fileInfo, version, startDate, startTime,...
-    headerBytes, reserve, numDataRecords, numSignals,...
-    sigLabels, numSamples, transducerType, physicalDimension,...
-    physicalMinimum, physicalMaximum, digitalMinimum, digitalMaximum, ...
-    prefilter, sigReserve, dataRecordDuration, mfilename);
 
 
-if isempty(signals)
-    signalsIdx = 1:numSignals;
-else
-    % Using ismember check whether all the signals
-    [sigExists, signalsIdx] = ismember(signals,sigLabels);
-    
-    % Check whether all the signals are specified using SelectedSignals
-    % are valid or not
-    if ~all(sigExists)
-        error(message('signal:edf:InvalidSignalLabel', filename));
-    end
-end
+% Check for Annotations signal label
+annotationExist = strcmpi(sigLabels, 'EDF Annotations');
+
+% Get signal indices
+signalsIdx = getSignalIndices(filename, signals, sigLabels);
+
 
 header.Filename = string(fileInfo.name);
 header.FileModDate = string(datestr(fileInfo.datenum));
@@ -140,15 +141,12 @@ header.DigitalMax = digitalMaximum(signalsIdx);
 header.Prefilter = prefilter(signalsIdx);
 header.NumSamples = numSamples(signalsIdx);
 header.SignalReserved = sigReserve(signalsIdx);
+header.Fs = numSamples(signalsIdx)./dataRecordDuration;
 
-
+%Don't do anything more if they just want the header
 if nargout == 1
     return;
 end
-
-% Check for Annotations signal label
-annotationExist = strcmpi(sigLabels, 'EDF Annotations');
-
 
 
 if (~isempty(tempRecords))
@@ -166,41 +164,26 @@ tDataRecordDurationFlag = (dataRecordDuration == 0);
 if tDataRecordDurationFlag
     % Read only annotations when dataRecordDuration is 0 which is supported
     % only in EDF+ files
-    
-    if isempty(tempRecords)
-        [annotations,data] = readDataAll(fid, filename,...
-            sigLabels, numDataRecords, physicalMaximum, physicalMinimum, ...
-            digitalMaximum, digitalMinimum, numSignals, numSamples,...
-            [], [], dataRecordDuration, true);
-    else
-        [annotations,data] = readData(fid, filename,...
-            sigLabels, numDataRecords, physicalMaximum, physicalMinimum, ...
-            digitalMaximum, digitalMinimum, numSignals, numSamples,...
-            [], [], dataRecordDuration, true);
-    end
+    [annotations,tempData] = signal.internal.edf.readData(fid, filename,...
+        sigLabels, numDataRecords, physicalMaximum, physicalMinimum, ...
+        digitalMaximum, digitalMinimum, numSignals, numSamples,...
+        [], [], dataRecordDuration, true);
 else
     % Read annotations and data for non-zero dataRecordDuration
-    if isempty(tempRecords)
-        [annotations,data] = readDataAll(fid, filename,...
-            sigLabels, numDataRecords, physicalMaximum, physicalMinimum, ...
-            digitalMaximum, digitalMinimum, numSignals, numSamples,...
-            signalsIdx, records, dataRecordDuration, false);
-    else
-        [annotations,data] = readData(fid, filename,...
-            sigLabels, numDataRecords, physicalMaximum, physicalMinimum, ...
-            digitalMaximum, digitalMinimum, numSignals, numSamples,...
-            signalsIdx, records, dataRecordDuration, false);
-    end
+    [annotations,tempData] = signal.internal.edf.readData(fid, filename,...
+        sigLabels, numDataRecords, physicalMaximum, physicalMinimum, ...
+        digitalMaximum, digitalMinimum, numSignals, numSamples,...
+        signalsIdx, records, dataRecordDuration, false);
 end
 
 % if (isempty(records))
-%     records = 1:size(data,1);
+%     records = 1:size(tempData,1);
 % end
 
 % Time Table computations
 if (any(annotationExist))
     [~, onset, annotations,...
-        tempDuration] = readAnnotations(annotations);
+        tempDuration] = signal.internal.edf.readAnnotations(annotations);
     %recordTimes = recordTimes(records);
     annotations = timetable(onset,annotations,tempDuration,...
         'VariableNames',["Annotations","Duration"]);
@@ -208,7 +191,7 @@ else
     annotations = timetable(duration.empty(0,1),...
         [],duration.empty(0,1),'VariableNames',...
         ["Annotations","Duration"]);
-    %   recordTimes = (records.'- 1).* seconds(dataRecordDuration);
+    % recordTimes = (records.'- 1).* seconds(dataRecordDuration);
 end
 annotations.Properties.DimensionNames{1} = 'Onset';
 
@@ -216,7 +199,7 @@ tTimeFormatFlag = strcmp(timeFormat,'datetime');
 if tTimeFormatFlag
     startDate = datetime([startDate '.' startTime],'InputFormat',...
         'dd.MM.yy.HH.mm.ss');
-    % recordTimes = recordTimes + startDate;
+    %     recordTimes = recordTimes + startDate;
     if isempty(annotations)
         tEmpty = zeros(0,1);
         annotations.Onset = datetime(tEmpty, tEmpty, tEmpty);
@@ -225,12 +208,55 @@ if tTimeFormatFlag
     end
 end
 
+if tDataRecordDurationFlag
+    %     if tTimeFormatFlag
+    %         tEmpty = zeros(0,1);
+    %         recordTimes =  datetime(tEmpty,tEmpty,tEmpty);
+    %     else
+    %         recordTimes = duration.empty(0,1);
+    %     end
+    %     tblData = timetable(recordTimes,...
+    %         [],duration.empty(0,1));
+else
+    reqSigLabels = sigLabels(signalsIdx);
+    %     if (strcmp(sigFormat,'timetable'))
+    %         tempData = convert2timetable(tempData,...
+    %             recordTimes,seconds(dataRecordDuration ./ numSamples(signalsIdx)),...
+    %             reqSigLabels);
+    %     end
+    
+    % Check if all the signal names are different or not
+    if length(unique(reqSigLabels)) < length(reqSigLabels)
+        warning(message('signal:edf:UniqueLabels',filename));
+        % Create variable names
+        tempNo = strings(length(reqSigLabels),1);
+        tempSignstr = "Signal Label ";
+        for idx = 1:length(reqSigLabels)
+            tempNo(idx) =  num2str(idx);
+        end
+        % reqSigLabels = strcat(tempSignstr,tempNo,":",reqSigLabels);
+    end
+    
+    
+    %     tblData = table2timetable(cell2table(tempData,'VariableNames',...
+    %         matlab.lang.makeValidName(reqSigLabels)),'RowTimes',recordTimes);
+end
+% tblData.Properties.DimensionNames{1} = 'Record Time';
+% data = tblData;
+
+N = size(tempData,2);
+data = cell(N,1);
+
+for ii = 1:N
+    data{ii} = cell2mat(tempData(:,ii));
+end
+
 if ~issortedrows(annotations)
     annotations = sortrows(annotations);
 end
 
 %Parse and validate given inputs
-function [timeFormat, signals, records] = parseInputs(filename,...
+function [sigFormat, timeFormat, signals, records] = parseInputs(filename,...
     varargin)
 ip = inputParser;
 ip.addRequired('filename', ...
@@ -241,21 +267,57 @@ ip.addParameter('SelectedSignals',[],...
 ip.addParameter('SelectedDataRecords',[],...
     @(x) validateattributes(x,{'numeric'},{'positive','integer','vector',...
     'increasing'}, 'EDFREAD','SelectedDataRecords'));
-% ip.addParameter('DataRecordOutputType','vector');
+ip.addParameter('DataRecordOutputType','vector');
 ip.addParameter('TimeOutputType','duration');
 ip.parse(filename,varargin{:});
 
-% % Validate DataRecordOutputType
-% sigFormat = validatestring(ip.Results.DataRecordOutputType,...
-%     {'vector','timetable'},mfilename,"DataRecordOutputType");
+% Validate DataRecordOutputType
+sigFormat = validatestring(ip.Results.DataRecordOutputType,...
+    {'vector','timetable'},mfilename,"DataRecordOutputType");
 
-%Validate TimeOutputType
+% Validate TimeOutputType
 timeFormat = validatestring(ip.Results.TimeOutputType,...
     {'datetime','duration'},mfilename,"TimeOutputType");
 
 signals = ip.Results.SelectedSignals;
 
 records = ip.Results.SelectedDataRecords;
+
+% Calculate indices of given signals
+function indices = getSignalIndices(filename,signals,labels)
+
+annotationExist = strcmpi(labels,"EDF Annotations");
+tempIndices = 1:numel(labels);
+
+% Populate signals if not present, else find their indices.
+if (isempty(signals))
+    indices = tempIndices;
+    indices(annotationExist) = [];
+elseif ischar(signals) || iscellstr(signals)
+    if iscolumn(signals)
+        signals = signals.';
+    end
+    
+    % Using ismember check whether all the signals
+    [sigExists, indices] = ismember(lower(signals),lower(labels));
+    
+    % Check whether all the signals are specified using SelectedSignals
+    % are valid or not
+    if ~all(sigExists)
+        error(message('signal:edf:InvalidSignalLabel', filename));
+    end
+end
+
+% % Change data to timetable
+% function data = convert2timetable(tdata,rtimes,timeValue,labels)
+% [nr,ns] = size(tdata);
+% data = cell(nr,ns);
+% for ii = 1:nr
+%     for jj = 1:ns
+%         data{ii,jj} = array2timetable(tdata{ii,jj},'TimeStep',timeValue(jj),...
+%             'StartTime',rtimes(ii),'VariableNames',labels(jj));
+%     end
+% end
 
 
 function varargout = readHeader(fid)
@@ -362,402 +424,3 @@ varargout{19} = str2double(string(reshape(hdr_vardata(1+ns*216:ns*224),...
 % Extract reserved field
 varargout{20} = strtrim(string(reshape(hdr_vardata(1+ns*224:ns*256),...
     32,ns).'));
-
-
-function validateEDF(filename, fileInfo, version, startDate, startTime,...
-    headerBytes, reserve, numDataRecords, numSignals,...
-    sigLabels, numSamples, transducerType, physicalDimension,...
-    physicalMinimum, physicalMaximum, digitalMinimum, digitalMaximum, ...
-    prefilter, sigReserve, dataRecordDuration, mfile)
-%validateEDF is used to validate EDF/EDF+ files
-%
-%   This function is for internal use only. It may change or be removed.
-
-%   Copyright 2020 The MathWorks, Inc.
-
-% Check whether version of data format is 0 or not
-if ~(strcmpi(version,"0"))
-    error(message('signal:edf:InvalidVersion', version, filename));
-end
-
-% Check startDate of EDF/EDF+ file is in 'dd.MM.yy' format or not
-try
-    datetime(startDate,'InputFormat','dd.MM.yy');
-catch
-    error(message('signal:edf:InvalidStartdate', filename));
-end
-
-% Check startTime of EDF/EDF+ file is in 'HH.mm.ss' format or not
-try
-    datetime(startTime,'InputFormat','HH.mm.ss');
-catch
-    error(message('signal:edf:InvalidStartTime', filename));
-end
-
-% Check numSamples has integer value
-validateattributes(numSamples,{'numeric'},{'integer'},mfile);
-
-% As per EDF/EDF+ spec file header has (256 + numSignals.*256) bytes
-tExpectedHeaderbytes = (256 + numel(sigLabels).*256);
-
-% Calculate file size based on header information as each sample value is
-% represented as a 2-byte integer in 2's complement format as per EDF/EDF+
-% spec
-if numDataRecords ~= -1 && numDataRecords > 0
-    tExpectedFileSize = (sum(numSamples).*numDataRecords.*2) + tExpectedHeaderbytes;
-    
-    % Check whether the file size is valid or not
-    if tExpectedFileSize ~= fileInfo.bytes
-        error(message('signal:edf:InvalidFileSize', fileInfo.bytes, tExpectedFileSize,...
-            filename));
-    end
-end
-
-% Check whether headerBytes field is valid or not
-if tExpectedHeaderbytes ~= headerBytes
-    error(message('signal:edf:InvalidHeaderBytes', filename,...
-        tExpectedHeaderbytes));
-end
-
-% Check whether Reserved field is valid or not
-reserve = validatestring(reserve,{'EDF+C','EDF+D',''},mfile,"Reserved");
-
-% Check numDataRecords field is not -1 for EDF+ file
-if ((~isempty(reserve) && numDataRecords <= 0) || ...
-        (isempty(reserve) && (numDataRecords < -1)))
-    error(message('signal:edf:InvalidDataRecord', filename));
-end
-
-% Check whether numSignals is equal to length of signalLabels
-if (length(sigLabels) ~= numSignals)
-    error(message('signal:edf:InvalidNumSignals', filename));
-end
-
-% Check whether the length of all the fields in the variable - header is
-% numSignals or not
-tExpectedLengths = {transducerType, physicalDimension,...
-    physicalMinimum, physicalMaximum, digitalMinimum, digitalMaximum, ...
-    prefilter, sigReserve, numSamples};
-tLengthsIdx = cellfun(@length,tExpectedLengths) == numSignals;
-
-if ~all(tLengthsIdx)
-    error(message('signal:edf:HeaderDataMissing', filename));
-end
-
-% Check if the file is EDF and error out when dataRecordDuration is zero
-if ((dataRecordDuration == 0) && isempty(reserve))
-    error(message('signal:edf:ZeroDataRecordDuration'));
-end
-
-% Check number of samples values
-validateattributes(numSamples, {'numeric'}, {'numel', numSignals, ...
-    'positive', 'nonnan'});
-
-
-function [annotations, data] = readData(fid,filename,siglabels,numDR,phymax,...
-    phymin,dmax,dmin,ns,numsamp,signals,records,dataRecordDuration,infoflag)
-%readData function is used to data and annotations of EDF/EDF+ files.
-%
-%   This function is for internal use only. It may change or be removed.
-
-%   Copyright 2020 The MathWorks, Inc.
-
-% Assuming data exist after the header
-dataExist = true;
-recordNum = 0;
-recordIdx = 0;
-data = {};
-if (numDR ~= -1) && ~infoflag
-    if (~isempty(records) && ~isempty(signals)) && (max(records) <= numDR)
-        data = cell(numel(records), numel(signals));
-    else
-        error(message('signal:edf:InvalidDataRecordIdx', filename));
-    end
-end
-
-annotationsIdx = find(strcmp(siglabels, 'EDF Annotations'),1);
-if (isempty(annotationsIdx))
-    annotationsIdx = -1;
-    annotations = cell(1,1);
-elseif (numDR ~= -1)
-    annotations = cell(numDR,1);
-else
-    annotations = cell(1,1);
-end
-
-sc = (phymax - phymin) ./ (dmax - dmin);
-dc = phymax - sc .* dmax;
-
-% Run the loop until we reach end of file
-while dataExist
-    
-    % We haven't reached the end of file, so assume data
-    % is present and increment the record number.
-    recordNum = recordNum+1;
-    record_exist = any(recordNum == records);
-    
-    if (record_exist)
-        recordIdx = recordIdx+1;
-    end
-    
-    for ii = 1:ns
-        
-        % Find signal indices
-        signalIdx = find(ii == signals,1);
-        
-        % Check if current signal is an annotation
-        if (ii == annotationsIdx)
-            annotations{recordNum} = fread(fid,numsamp(ii)*2,'*char').';
-            if (isempty(annotations{recordNum}) && (dataRecordDuration == 0))
-                annotations(recordNum) = [];
-                dataExist = false;
-                break;
-            else
-                continue;
-            end
-        elseif ((numDR == -1 || record_exist) && any(signalIdx))
-            temp = fread(fid,numsamp(ii),'int16');
-        else
-            % If seeking is unsuccessful, assume we
-            % reached the end of file
-            if (fseek(fid,numsamp(ii)*2,'cof') == -1)
-                dataExist = false;
-                break;
-            else
-                continue;
-            end
-        end
-        
-        % if the data read is empty, then assume we reached
-        % end of file.
-        if (isempty(temp))
-            dataExist = false;
-            break;
-        elseif (record_exist)
-            data{recordIdx,signalIdx} = temp*sc(ii)+dc(ii);
-        elseif (isempty(records))
-            data{recordNum,signalIdx} = temp*sc(ii)+dc(ii);
-        end
-    end
-end
-
-function [annotations, data] = readDataAll(fid,filename,siglabels,numDR,phymax,...
-    phymin,dmax,dmin,ns,numsamp,signals,records,dataRecordDuration,infoflag)
-%readData function is used to data and annotations of EDF/EDF+ files.
-%
-%   This function is for internal use only. It may change or be removed.
-
-%   Copyright 2020 The MathWorks, Inc.
-
-% Assuming data exist after the header
-dataExist = true;
-recordNum = 0;
-recordIdx = 0;
-data = {};
-if (numDR ~= -1) && ~infoflag
-    if (~isempty(records) && ~isempty(signals)) && (max(records) <= numDR)
-        data = cell(1, numel(signals));
-    else
-        error(message('signal:edf:InvalidDataRecordIdx', filename));
-    end
-end
-
-annotationsIdx = find(strcmp(siglabels, 'EDF Annotations'),1);
-if (isempty(annotationsIdx))
-    annotationsIdx = -1;
-    annotations = cell(1,1);
-elseif (numDR ~= -1)
-    annotations = cell(numDR,1);
-else
-    annotations = cell(1,1);
-end
-
-sc = (phymax - phymin) ./ (dmax - dmin);
-dc = phymax - sc .* dmax;
-
-signal_size = numsamp.*numDR;
-
-% Run the loop until we reach end of file
-while dataExist
-    
-    % We haven't reached the end of file, so assume data
-    % is present and increment the record number.
-    recordNum = recordNum+1;
-    record_exist = any(recordNum == records);
-    
-    if (record_exist)
-        recordIdx = recordIdx+1;
-    end
-    
-    for ii = 1:ns
-        
-        % Find signal indices
-        signalIdx = find(ii == signals,1);
-        
-        % Check if current signal is an annotation
-        if (ii == annotationsIdx)
-            annotations{recordNum} = fread(fid,numsamp(ii)*2,'*char').';
-            if (isempty(annotations{recordNum}) && (dataRecordDuration == 0))
-                annotations(recordNum) = [];
-                dataExist = false;
-                break;
-            else
-                continue;
-            end
-        elseif ((numDR == -1 || record_exist) && any(signalIdx))
-            temp = fread(fid,signal_size(ii),'int16');
-        else
-            % If seeking is unsuccessful, assume we
-            % reached the end of file
-            if (fseek(fid,signal_size(ii)*2,'cof') == -1)
-                dataExist = false;
-                break;
-            else
-                continue;
-            end
-        end
-        
-        % if the data read is empty, then assume we reached
-        % end of file.
-        if (isempty(temp))
-            dataExist = false;
-            break;
-        elseif (record_exist)
-            data{recordIdx,signalIdx} = temp*sc(ii)+dc(ii);
-        elseif (isempty(records))
-            data{recordNum,signalIdx} = temp*sc(ii)+dc(ii);
-        end
-    end
-end
-
-
-
-function [fid,fileInfo] = openFile(filename)
-%openFile function is used to open the file and return its file ID for reading its header
-%
-%   This function is for internal use only. It may change or be removed.
-
-%   Copyright 2020 The MathWorks, Inc.
-
-[tfid, errmsg] = fopen(filename,'r');
-
-originalFilename = filename;
-% fopen() returns -1 if file is not present
-if tfid == -1
-    % Look for filename with extensions.
-    filename = [originalFilename '.edf'];
-    [tfid, errmsg] = fopen(filename);
-    
-    if tfid == -1
-        filename = [originalFilename '.EDF'];
-        [tfid, errmsg] = fopen(filename);
-    end
-end
-
-fid = tfid;
-
-% Record filesystem details (fileInfo is empty object if the filename is
-% not the same directory).
-fileInfo = dir(filename);
-
-% Get the fileInfo when the file is not in the same directory but it is in
-% the matlab path.
-if isempty(fileInfo) && tfid ~= -1
-    filename =  fopen(fid);
-    fileInfo = dir(filename);
-end
-
-% Error if file does not exists
-if fid == -1
-    if ~isempty(fileInfo)
-        % String 'Too many open files' is from strerror. fopen() also
-        % returns error messages as char output as per documentation which
-        % we is now using for checking following error condition.
-        if contains(errmsg, 'Too many open files')
-            error(message('signal:edf:TooManyOpenFiles', originalFilename));
-        else
-            error(message('signal:edf:FileReadPermission', originalFilename));
-        end
-    elseif isempty(fileInfo)
-        error(message('signal:edf:FileDoesNotExist', originalFilename));
-    end
-elseif ((fid ~= -1) && (fileInfo.bytes == 0))
-    fclose(fid);
-    error(message('signal:edf:ZeroFileSize', originalFilename));
-end
-
-function [recordTimes,onset,annotations,...
-    annotationDuration] = readAnnotations(RawAnnotations)
-%readAnnotations function is used to make Annotations of EDF/EDF+ files more readable
-%
-%   This function is for internal use only. It may change or be removed.
-
-%   Copyright 2020 The MathWorks, Inc.
-
-nr = numel(RawAnnotations);
-x = zeros(nr,1);
-
-for ii = 1:nr
-    if ~ischar(RawAnnotations{ii})
-        RawAnnotations{ii} = char(RawAnnotations{ii});
-    end
-    RawAnnotations{ii} = purifyAnnotation(RawAnnotations{ii});
-    x(ii) = count(RawAnnotations{ii}, char(0));
-end
-
-idx = 0;
-r_idx = zeros(nr,1);
-tOnset = cell(sum(x),1);
-tDuration = cell(sum(x),1);
-annotations = strings(sum(x),1);
-
-for ii = 1:nr
-    n_idx = [0 find(RawAnnotations{ii} == char(0))];
-    r_idx(ii) = 1+idx;
-    
-    for jj = 1:x(ii)
-        idx = idx+1;
-        temp = RawAnnotations{ii}(1+n_idx(jj):n_idx(jj+1)-1);
-        o_idx = find(temp == char(20));
-        d_idx = find(temp(1:o_idx(1)) == char(21));
-        
-        if (any(d_idx))
-            tDuration{idx} = temp(1+d_idx(1):o_idx(1)-1);
-            tOnset{idx} = temp(1:d_idx(1)-1);
-        else
-            tOnset{idx} = temp(1:o_idx(1)-1);
-        end
-        annotations(idx) = temp(1+o_idx(1):o_idx(end)-1);
-    end
-end
-
-onset = seconds(str2double(tOnset));
-annotationDuration = seconds(str2double(tDuration));
-recordTimes = onset(r_idx);
-
-n_idx = annotations == "";
-onset(n_idx) = [];
-annotationDuration(n_idx) = [];
-annotations(n_idx) = [];
-
-if isempty(onset)
-    onset = onset(:);
-    annotations = annotations(:);
-    annotationDuration = annotationDuration(:);
-end
-
-
-function res = purifyAnnotation(input)
-for ii = numel(input):-1:1
-    if (input(ii) == char(0))
-        input(ii) = ' ';
-    else
-        input(ii+1) = char(0);
-        break;
-    end
-end
-
-res = strtrim(input);
-
-
-
