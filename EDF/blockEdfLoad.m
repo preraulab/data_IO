@@ -397,9 +397,11 @@ header.samplingfrequency=samplingfrequency;
 %------------------------------------------------------ Create return value
 if nargout < 2
    varargout{1} = header;
+   return;
 elseif nargout == 2
    varargout{1} = header;
    varargout{2} = signalHeader;
+   return;
 elseif nargout == 3
     
    % Check if a reduce signal set is requested
