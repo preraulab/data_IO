@@ -386,13 +386,14 @@ if nargout >=3
         signalCell{s} = value;
     end
     
-end % End Signal Load Section
-
-signalSamples = arrayfun(...
+    signalSamples = arrayfun(...
     @(x)signalHeader(x).samples_in_record, [1:num_signals]);
 
-samplingfrequency = (signalSamples/header.data_record_duration)';
-header.samplingfrequency=samplingfrequency;
+    samplingfrequency = (signalSamples/header.data_record_duration)';
+    header.samplingfrequency=samplingfrequency;
+end % End Signal Load Section
+
+
 
 %------------------------------------------------------ Create return value
 if nargout < 2
