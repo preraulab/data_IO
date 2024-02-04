@@ -8,7 +8,7 @@ function bytestream_save(filename,varargin)
 %   filename: filename as a string
 %   <variables>: list of variables to save: VAR1, VAR2, ...
 %
-%   Copyright 2017 Michael J. Prerau, Ph.D.
+%   Copyright 2024 Michael J. Prerau, Ph.D.
 %
 %   Last modified 12/05/2017
 %% ********************************************************************

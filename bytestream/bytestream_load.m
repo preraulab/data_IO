@@ -11,7 +11,7 @@ function out=bytestream_load(filename,varargin)
 %   Output:
 %   S: a struct with the variables as fieldnames with associated values
 %
-%   Copyright 2017 Michael J. Prerau, Ph.D.
+%   Copyright 2024 Michael J. Prerau, Ph.D.
 %
 %   Last modified 12/05/2017
 %% ********************************************************************

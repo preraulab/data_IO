@@ -10,7 +10,7 @@ function [stages,times] = load_vmrk_scoring(filename,Fs)
 %                           3=NREM1,2=NREM2,1=NREM3,0=Undefined)
 %       times: 1D double - vector of timestamps for stages (seconds)
 %
-%   Copyright 2020 Michael J. Prerau, Ph.D. - http://www.sleepEEG.org
+%   Copyright 2024 Michael J. Prerau, Ph.D. - http://www.sleepEEG.org
 %   Last modified 
 %       06/03/2022 - created - Tom & Mike
 %% ********************************************************************

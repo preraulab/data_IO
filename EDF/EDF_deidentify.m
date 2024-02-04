@@ -10,7 +10,7 @@
 %       copy_file: logical - true: saves a copy of the file with
 %       '-deidentified' tag, false: overwrites file (default: true)
 % 
-%   Copyright 2021 Michael J. Prerau, Ph.D. Laboratory - http://www.sleepEEG.org
+%   Copyright 2024 Michael J. Prerau, Ph.D. Laboratory - http://www.sleepEEG.org
 %
 %   Last modified 02/03/2021
 %% ********************************************************************
