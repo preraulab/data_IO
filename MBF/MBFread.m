@@ -41,7 +41,7 @@
 %         will be written as specified but others (e.g. table, struct, cell array, etc.) will be converted into
 %         serialized uint8 byteStream format.
 %
-%   Copyright 2021 Michael J. Prerau Laboratory. - http://www.sleepEEG.org
+%   Copyright 2024 Michael J. Prerau Laboratory. - http://www.sleepEEG.org
 %   Author: Michael J. Prerau, Ph.D.
 %
 %   Last modified 02/22/2021
@@ -205,7 +205,7 @@ function out = intrange2num(index_values, data_type, data_range)
 %             disp(['MSE precision error for ' data_type ': ' num2str(mean(dbl_vals - vals))]);
 %         end
 %
-%   Copyright 2021 Michael J. Prerau Laboratory. - http://www.sleepEEG.org
+%   Copyright 2024 Michael J. Prerau Laboratory. - http://www.sleepEEG.org
 %   Authors: Michael J. Prerau, Ph.D.
 %
 %   Last modified 03/01/2021
