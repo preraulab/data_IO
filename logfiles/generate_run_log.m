@@ -72,10 +72,10 @@ p = inputParser;
 p.CaseSensitive = false;
 
 % Add parameters to the input parser
-addRequired(p, 'structs', @(x) validateattributes(x, {'cell'}, {'vector'}));
-addRequired(p, 'struct_names', @(x) validateattributes(x, {'cell'}, {'vector'}));
-addRequired(p, 'vars', @(x) validateattributes(x, {'cell'}, {'vector'}));
-addRequired(p, 'var_names', @(x) validateattributes(x, {'cell'}, {'vector'}));
+% addParameter(p, 'structs', {},@(x) validateattributes(x, {'cell'}, {'vector'}));
+% addParameter(p, 'struct_names',{}, @(x) validateattributes(x, {'cell'}, {'vector'}));
+% addParameter(p, 'vars',{}, @(x) validateattributes(x, {'cell'}, {'vector'}));
+% addParameter(p, 'var_names',{}, @(x) validateattributes(x, {'cell'}, {'vector'}) );
 addParameter(p, 'run_ID', '', @(x) validateattributes(x, {'char'}, {'row'}));
 addParameter(p, 'ID_len', 7, @(x) validateattributes(x, {'numeric'}, {'scalar', 'positive', 'integer'}));
 addParameter(p, 'fname', '', @(x) validateattributes(x, {'char'}, {'row'}));
@@ -85,14 +85,14 @@ addParameter(p, 'write_file', true, @(x) validateattributes(x, {'logical'}, {'sc
 addParameter(p, 'verbose', true, @(x) validateattributes(x, {'logical'}, {'scalar'}));
 
 % Parse inputs
-parse(p, structs, struct_names, vars, var_names, varargin{:});
+parse(p,varargin{:});
 
 % Retrieve parsed inputs
 run_prefix = p.Results.run_prefix;
-structs = p.Results.structs;
-struct_names = p.Results.struct_names;
-vars = p.Results.vars;
-var_names = p.Results.var_names;
+% structs = p.Results.structs;
+% struct_names = p.Results.struct_names;
+% vars = p.Results.vars;
+% var_names = p.Results.var_names;
 run_ID = p.Results.run_ID;
 fname = p.Results.fname;
 file_path = p.Results.file_path;
@@ -100,6 +100,7 @@ write_file = p.Results.write_file;
 verbose = p.Results.verbose;
 ID_len = p.Results.ID_len;
 
+assert(~(isempty(structs) && isempty(vars)),'Must have either structs or vars');
 
 % Generate Unique ID
 if isempty(run_ID)
