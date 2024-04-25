@@ -92,7 +92,19 @@ write_file = p.Results.write_file;
 verbose = p.Results.verbose;
 ID_len = p.Results.ID_len;
 
+if nargin<3
+    vars = {};
+    var_names = {};
+end
+
 assert(~(isempty(structs) && isempty(vars)),'Must have either structs or vars');
+if ~isempty(structs)
+    assert(iscell(structs),'Structs must be a cell');
+end
+
+if ~isempty(vars)
+    assert(iscell(vars),'Vars must be a cell');
+end
 
 % Generate Unique ID
 if isempty(run_ID)
