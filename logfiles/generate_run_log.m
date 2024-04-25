@@ -1,10 +1,9 @@
 %GENERATE_RUN_LOG Generate and log information for a pipeline run
 %
 %   Usage:
-%       [run_ID, fname] = generate_run_log(structs, struct_names, vars, var_names, run_ID, fname, path, write_file, verbose, ID_len)
+%       [run_ID, fname] = generate_run_log2(structs, struct_names, vars, var_names, varargin)
 %
 %   Input:
-%       run_prefix: char - name of run as filename prefix
 %       structs: cell array - containing structures -- required
 %       struct_names: cell array - names of the structures -- required
 %       vars: cell array - containing variables -- required
@@ -21,10 +20,7 @@
 %       fname: char - file name to save the log
 %
 %   Example:
-%       %Run prefix
-%       run_prefix = 'myrun';
-%
-%       %Define structures
+%       % Define structures
 %       struct_names = {'opt_struct1', 'opt_struct2'};
 %
 %       opt_struct1.f1 = 'asdf';
@@ -38,21 +34,19 @@
 %       structs{1} = opt_struct1;
 %       structs{2} = opt_struct2;
 %
-%       %Define variables
+%       % Define variables
 %       varnames = {'var1','var2','var3','var4'};
 %       vars = {3, [6 34 2 5 3], 'qwerty', {'a', 234, [6 5 3]}};
 %
-%       generate_run_log(run_name, structs, struct_names, vars, varnames);
+%       generate_run_log(structs, struct_names, vars, varnames, 'run_ID', 'myrun', 'ID_len', 30);
 %
 %   Copyright 2024 Michael J. Prerau Laboratory - http://www.sleepEEG.org
 %   **********************************************************************
 
-function [run_ID, fname] = generate_run_log(run_prefix, structs, struct_names, vars, var_names, run_ID, fname, file_path, write_file, verbose, ID_len)
+function [run_ID, fname] = generate_run_log(structs, struct_names, vars, var_names, varargin)
 % Generate example data
 if nargin == 0
     %Run prefix
-    run_prefix = 'myrun';
-
     struct_names = {'opt_struct1', 'opt_struct2'};
 
     opt_struct1.f1 = 'asdf';
@@ -69,20 +63,48 @@ if nargin == 0
     varnames = {'var1','var2','var3','var4'};
     vars = {3, [6 34 2 5 3], 'qwerty', {'a', 234, [6 5 3]}};
 
-    generate_run_log(run_prefix, structs, struct_names, vars, varnames);
+    generate_run_log(structs, struct_names, vars, varnames, 'run_prefix', 'myrun', 'ID_len', 7);
     return;
 end
 
+% Create an input parser
+p = inputParser;
+p.CaseSensitive = false;
+
+% Add parameters to the input parser
+addRequired(p, 'structs', @(x) validateattributes(x, {'cell'}, {'vector'}));
+addRequired(p, 'struct_names', @(x) validateattributes(x, {'cell'}, {'vector'}));
+addRequired(p, 'vars', @(x) validateattributes(x, {'cell'}, {'vector'}));
+addRequired(p, 'var_names', @(x) validateattributes(x, {'cell'}, {'vector'}));
+addParameter(p, 'run_ID', '', @(x) validateattributes(x, {'char'}, {'row'}));
+addParameter(p, 'ID_len', 7, @(x) validateattributes(x, {'numeric'}, {'scalar', 'positive', 'integer'}));
+addParameter(p, 'fname', '', @(x) validateattributes(x, {'char'}, {'row'}));
+addParameter(p, 'run_prefix','runlog', @(x) validateattributes(x, {'char'}, {'row'}));
+addParameter(p, 'file_path', '', @(x) validateattributes(x, {'char'}, {'row'}));
+addParameter(p, 'write_file', true, @(x) validateattributes(x, {'logical'}, {'scalar'}));
+addParameter(p, 'verbose', true, @(x) validateattributes(x, {'logical'}, {'scalar'}));
+
+% Parse inputs
+parse(p, structs, struct_names, vars, var_names, varargin{:});
+
+% Retrieve parsed inputs
+run_prefix = p.Results.run_prefix;
+structs = p.Results.structs;
+struct_names = p.Results.struct_names;
+vars = p.Results.vars;
+var_names = p.Results.var_names;
+run_ID = p.Results.run_ID;
+fname = p.Results.fname;
+file_path = p.Results.file_path;
+write_file = p.Results.write_file;
+verbose = p.Results.verbose;
+ID_len = p.Results.ID_len;
+
+
 % Generate Unique ID
-if nargin < 6 || isempty(run_ID)
+if isempty(run_ID)
     idGEN =  java.util.UUID.randomUUID;
     run_ID = char(idGEN.toString);
-
-    % Limit to ID_len character ID
-    if nargin < 11 || isempty(ID_len)
-        ID_len = 7;
-    end
-
     run_ID = run_ID(1:ID_len);
     %If the last value is an underscore, replace with a valid character
     if strcmp(run_ID(end),'_')
@@ -96,11 +118,7 @@ dtime = datetime;
 dtime.Format = 'yyyyMMdd_HHmmss';
 run_start = char(dtime);
 
-if isempty(run_prefix)
-    run_prefix = 'runlog';
-end
-
-if nargin < 7 || isempty(fname)
+if isempty(fname)
     % Generate file name
     fname = [run_prefix '_' run_ID '_' run_start '.m'];
 end
@@ -114,20 +132,6 @@ fname = strrep(fname,':','');
 assert(is_valid_matlab_filename(fname),...
     ['Must be valid filename: Under 63 chars, start with a letter,' ...
     'contain only letters, digits, and underscores, no reserved keywords']);
-
-if nargin<8 || isempty(file_path)
-    file_path = '';
-end
-
-% Set verbose to true if not provided
-if nargin < 9 || isempty(verbose)
-    verbose = true;
-end
-
-% Set write_file to true if not provided
-if nargin < 8 || isempty(write_file)
-    write_file = true;
-end
 
 %Open up the file
 if write_file
