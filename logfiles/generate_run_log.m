@@ -72,10 +72,6 @@ p = inputParser;
 p.CaseSensitive = false;
 
 % Add parameters to the input parser
-% addParameter(p, 'structs', {},@(x) validateattributes(x, {'cell'}, {'vector'}));
-% addParameter(p, 'struct_names',{}, @(x) validateattributes(x, {'cell'}, {'vector'}));
-% addParameter(p, 'vars',{}, @(x) validateattributes(x, {'cell'}, {'vector'}));
-% addParameter(p, 'var_names',{}, @(x) validateattributes(x, {'cell'}, {'vector'}) );
 addParameter(p, 'run_ID', '', @(x) validateattributes(x, {'char'}, {'row'}));
 addParameter(p, 'ID_len', 7, @(x) validateattributes(x, {'numeric'}, {'scalar', 'positive', 'integer'}));
 addParameter(p, 'fname', '', @(x) validateattributes(x, {'char'}, {'row'}));
@@ -89,10 +85,6 @@ parse(p,varargin{:});
 
 % Retrieve parsed inputs
 run_prefix = p.Results.run_prefix;
-% structs = p.Results.structs;
-% struct_names = p.Results.struct_names;
-% vars = p.Results.vars;
-% var_names = p.Results.var_names;
 run_ID = p.Results.run_ID;
 fname = p.Results.fname;
 file_path = p.Results.file_path;
