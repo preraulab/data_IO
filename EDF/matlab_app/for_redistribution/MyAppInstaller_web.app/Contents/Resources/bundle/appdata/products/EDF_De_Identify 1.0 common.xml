@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<productData>
+   <dependsOn>
+      <component>
+         <name>EDF_De_Identify</name>
+         <locale/>
+         <platformList>
+            <platform>glnxa64</platform>
+            <platform>maci64</platform>
+            <platform>win32</platform>
+            <platform>win64</platform>
+         </platformList>
+         <version>1.0</version>
+      </component>
+   </dependsOn>
+   <installerUsage>
+      <usage>mcr</usage>
+   </installerUsage>
+   <isControllingProduct>true</isControllingProduct>
+   <platformList>
+      <platform>glnxa64</platform>
+      <platform>maci64</platform>
+      <platform>win32</platform>
+      <platform>win64</platform>
+   </platformList>
+   <productName>EDF_De_Identify</productName>
+   <productNumber>5000</productNumber>
+   <productBaseCode>EDF_De_Identify</productBaseCode>
+   <productVersion>1.0</productVersion>
+   <releaseFamily>R2024a</releaseFamily>
+   <releaseDescription>R2024a</releaseDescription>
+   <requiredProducts/>
+</productData>

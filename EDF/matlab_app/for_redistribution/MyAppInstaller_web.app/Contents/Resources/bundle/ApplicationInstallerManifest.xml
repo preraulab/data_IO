@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApplicationInstallerManifest>
+   <DefaultInstallationDirectory>/Applications/EDF_De_Identify/</DefaultInstallationDirectory>
+   <ApplicationName>EDF_De_Identify</ApplicationName>
+   <ExecutableName>application/EDF_De_Identify.exe</ExecutableName>
+   <GUID>5bc5fac9-9747-4f7e-bf25-974e4c7dfcb8</GUID>
+   <ApplicationIcon>default_icon_48.png</ApplicationIcon>
+   <Logo>default_logo.png</Logo>
+   <Version>1.0</Version>
+   <WelcomePanelText>EDF_De_Identify 1.0
+Prerau Lab</WelcomePanelText>
+   <MCRProducts>
+      <MCRProduct>
+         <ExternalProductIdentifier>35002</ExternalProductIdentifier>
+      </MCRProduct>
+      <MCRProduct>
+         <ExternalProductIdentifier>35003</ExternalProductIdentifier>
+      </MCRProduct>
+      <MCRProduct>
+         <ExternalProductIdentifier>35010</ExternalProductIdentifier>
+      </MCRProduct>
+   </MCRProducts>
+</ApplicationInstallerManifest>

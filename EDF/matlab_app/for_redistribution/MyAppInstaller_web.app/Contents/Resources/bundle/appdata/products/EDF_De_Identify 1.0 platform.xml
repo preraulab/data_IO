@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<productAdditionalComps>
+   <dependsOn>
+      <component>
+         <name>EDF_De_Identify</name>
+         <locale/>
+         <platformList>
+            <platform>maca64</platform>
+         </platformList>
+         <version>1.0</version>
+      </component>
+   </dependsOn>
+   <isControllingProduct>true</isControllingProduct>
+   <platform>maca64</platform>
+   <productName>EDF_De_Identify</productName>
+   <productNumber>5000</productNumber>
+   <productBaseCode>EDF_De_Identify</productBaseCode>
+   <productVersion>1.0</productVersion>
+   <releaseFamily>R2024a</releaseFamily>
+   <releaseDescription>R2024a</releaseDescription>
+</productAdditionalComps>
