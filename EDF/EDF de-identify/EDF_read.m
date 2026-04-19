@@ -119,7 +119,7 @@ signalsIdx = getSignalIndices(filename, signals, sigLabels);
 
 
 header.Filename = string(fileInfo.name);
-header.FileModDate = string(datestr(fileInfo.datenum));
+header.FileModDate = string(datetime(fileInfo.datenum, 'ConvertFrom', 'datenum'));
 header.FileSize = fileInfo.bytes;
 header.Version = string(version);
 header.Patient = string(patient);
