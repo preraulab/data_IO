@@ -1,4 +1,31 @@
 function [stage, events, comments, comment_times]=readgrassstaging(filename,saveprefix)
+%READGRASSSTAGING  Read GRASS staging, events, and comments from an xls or txt export
+%
+%   Usage:
+%       [stage, events, comments, comment_times] = readgrassstaging(filename)
+%       [stage, events, comments, comment_times] = readgrassstaging(filename, saveprefix)
+%
+%   Inputs:
+%       filename   : char - path to .xls or .txt scoring export -- required
+%       saveprefix : char - if provided, write '<saveprefix>_scored.mat' with parsed outputs
+%
+%   Outputs:
+%       stage         : struct with fields
+%                         - stage : Nx1 double - stage code (5=Wake, 4=REM, 3=N1, 2=N2, 1=N3, 0=No Stage)
+%                         - time  : Nx1 double - stage onset time in seconds
+%       events        : struct with fields times, durs, name, and logical
+%                       masks AR, DSAT, EKG, CA, OH, PLM, RERA, SNORE
+%       comments      : cell of char - free-form comment strings
+%       comment_times : 1xM double - times in seconds for each comment
+%
+%   Notes:
+%       Timestamps are parsed from HH:MM:SS columns with a cumulative
+%       modulo-86400 adjustment to handle midnight crossings.
+%
+%   See also: convert_grass_scoring, read_staging
+%
+%   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
+%        Source: https://github.com/preraulab/labcode_main
 
 if strfind(filename,'xls')
     %Read in the excel file

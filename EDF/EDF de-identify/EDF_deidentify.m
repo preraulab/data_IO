@@ -1,21 +1,28 @@
-%EDF_DEIDENTIFY  Deidentify EDF files
+function EDF_deidentify(filename, copy_file)
+%EDF_DEIDENTIFY  Deidentify one or more EDF files by blanking patient/recording header fields
 %
 %   Usage:
-%   Direct input:
-%       EDF_deidentify() - Launches gui inputs
+%       EDF_deidentify()
+%       EDF_deidentify(filename)
 %       EDF_deidentify(filename, copy_file)
 %
-%   Input:
-%       filename: string or cell of strings - filename(s) -- required
-%       copy_file: logical - true: saves a copy of the file with
-%       '-deidentified' tag, false: overwrites file (default: true)
-% 
-%   Copyright 2024 Michael J. Prerau, Ph.D. Laboratory - http://www.sleepEEG.org
+%   Inputs:
+%       filename  : char or cell of char - EDF filename(s); launches GUI if omitted
+%       copy_file : logical - if true save a '*_deidentified.edf' copy, if false overwrite original (default: true)
 %
-%   Last modified 02/03/2021
-%% ********************************************************************
+%   Outputs:
+%       none (side effects only)
+%
+%   Notes:
+%       Overwrites the version, patient_id, local_recording_id, and
+%       recording-start-date header fields in place. The EDF signal data
+%       are not modified.
+%
+%   See also: EDF_read, blockEdfLoad
+%
+%   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
+%        Source: https://github.com/preraulab/labcode_main
 
-function EDF_deidentify(filename, copy_file)
 %Sets default to copy file
 if nargin == 1
     copy_file = true;

@@ -1,5 +1,21 @@
-%Checks to see if we need to convert to bytestream
 function result = isIOdatatype(typestr)
+%ISIODATATYPE  Check whether a MATLAB type string names a native binary I/O data type
+%
+%   Usage:
+%       result = isIOdatatype(typestr)
+%
+%   Inputs:
+%       typestr : char - candidate type name (e.g., 'double', 'uint16', 'int8') -- required
+%
+%   Outputs:
+%       result : logical - true if the type can be read/written with fread/fwrite
+%                without byte-stream serialization
+%
+%   See also: bytestream_save, bytestream_load, MBFwrite
+%
+%   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
+%        Source: https://github.com/preraulab/labcode_main
+
 nativetypes = ...
     {'uint',...
     'uint8',...

@@ -1,42 +1,37 @@
 function out = num2intrange(values, data_type, data_range)
-%NUM2INTRANGE  Converts data to an integer range data type
+%NUM2INTRANGE  Convert double data to an integer type by mapping a physical range to its full int range
 %
 %   Usage:
-%   Direct input:
 %       out = num2intrange(values, data_type, data_range)
 %
-%   Input:
-%       values: 1xN vector of data values 
-%       data_type: string - valid int data type: u/int/8/16/32/64
-%       data_range: 1x2 max/min values for data (physical min/max)
+%   Inputs:
+%       values     : 1xN numeric - data values to encode -- required
+%       data_type  : char - target int type ('uint8','int16',...) -- required
+%       data_range : 1x2 double - physical [min max] to map across full int range -- required
 %
-%   Output:
-%       out: 1xN vector of data values index in type data_type
+%   Outputs:
+%       out : 1xN data_type - values quantized to the requested integer type
+%
+%   Notes:
+%       Values outside data_range are clipped by the integer cast and a
+%       warning is emitted.
 %
 %   Example:
-%         data_types = {'uint8', 'int8', 'int32', 'int64'}; %Select data type
-%         data_range = [-3000,3000]; %Define data range
-% 
-%         %Create random data spanning range
-%         vals = rand(1,10000)*diff(data_range)+data_range(1); 
-% 
-%         %Loop through several data types to show precision errors
-%         for ii = 1:length(data_types)
-%             %Select data type
-%             data_type = data_types{ii};
-% 
-%             %Convert data to index
-%             idx_vals = num2intrange(vals, data_type, data_range);
-%             dbl_vals = intrange2num(idx_vals, data_type, data_range);
-% 
-%             disp(['MSE precision error for ' data_type ': ' num2str(mean(dbl_vals - vals))]);
-%         end
+%       data_types = {'uint8', 'int8', 'int32', 'int64'};
+%       data_range = [-3000, 3000];
+%       vals = rand(1,10000) * diff(data_range) + data_range(1);
+%       for ii = 1:length(data_types)
+%           data_type = data_types{ii};
+%           idx_vals = num2intrange(vals, data_type, data_range);
+%           dbl_vals = intrange2num(idx_vals, data_type, data_range);
+%           disp(['MSE precision error for ' data_type ': ' num2str(mean(dbl_vals - vals))]);
+%       end
 %
-%   Copyright 2024 Michael J. Prerau Laboratory. - http://www.sleepEEG.org
-%   Author: Michael J. Prerau, Ph.D.
+%   See also: intrange2num, MBFread, MBFwrite
 %
-%   Last modified 03/01/2021
-%% ********************************************************************
+%   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
+%        Source: https://github.com/preraulab/labcode_main
+
 %Get data type index range
 if isinttype(data_type) %Check if valid int type
     index_range = cast([intmin(data_type) intmax(data_type)],'like',values);

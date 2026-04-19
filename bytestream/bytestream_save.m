@@ -1,17 +1,24 @@
 function bytestream_save(filename,varargin)
-%BYTESTREAM_SAVE Save data to bytestream file
+%BYTESTREAM_SAVE  Save variables as uint8 byte streams in a .mat file
 %
 %   Usage:
-%   bytestream_save(filename, <variables>)
+%       bytestream_save(filename, var1, var2, ...)
 %
-%   Input:
-%   filename: filename as a string
-%   <variables>: list of variables to save: VAR1, VAR2, ...
+%   Inputs:
+%       filename : char - path to target .mat file -- required
+%       varargin : char - names of caller-workspace variables to save -- required
 %
-%   Copyright 2024 Michael J. Prerau, Ph.D.
+%   Outputs:
+%       none (side effects only)
 %
-%   Last modified 12/05/2017
-%% ********************************************************************
+%   Notes:
+%       Each variable is serialized with getByteStreamFromArray and appended
+%       to the .mat file in v6 format.
+%
+%   See also: bytestream_load, getByteStreamFromArray
+%
+%   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
+%        Source: https://github.com/preraulab/labcode_main
 
 %Check inputs
 if any(~cellfun(@isstr,varargin))

@@ -1,51 +1,46 @@
 function MBFwrite(filename, vars, var_names, var_types, file_info)
-%MDFWRITE  Reads a file in Multivariable Binary Format
+%MBFWRITE  Write variables to a file in Multivariable Binary Format (MBF)
 %
 %   Usage:
-%   Direct input:
+%       MBFwrite(filename, vars, var_names, var_types)
 %       MBFwrite(filename, vars, var_names, var_types, file_info)
 %
-%   Input:
-%       filename: string file name
-%       vars: 1xV cell array of variables
-%       var_names: 1xV cell array of strings with variable names
-%       var_types: 1xV cell array of strings with variable data types
-%       file_info: string with file info (optional)
+%   Inputs:
+%       filename  : char - target .mbf file path -- required
+%       vars      : 1xV cell - variables to write -- required
+%       var_names : 1xV cell of char - name for each variable -- required
+%       var_types : 1xV cell of char - declared type for each variable
+%                   (e.g. 'double', 'single', 'int16 [-3000 3000]') -- required
+%       file_info : char - free-form info string written as header line 1 (default: filename)
 %
-%     ******* MBF Data Specs *************
+%   Outputs:
+%       none (side effects only)
 %
-%     The MBF data format is broken into two sections:
-%         A header section, which is line-by-line ascii, and designed to be easily readable
-%         A data section, which is binary
+%   Notes:
+%       The MBF file layout is:
 %
-%     Header:
-%         Line 1: File info - This is the filename by default but can contain any relevant information
-%         Line 2: blank
-%         Line 3: Number of variables
-%         Line 4: blank
+%         Header (ASCII, line-based)
+%           Line 1            : file info (filename by default)
+%           Line 2            : blank
+%           Line 3            : number of variables
+%           Line 4            : blank
+%           Per variable (4 lines):
+%             name            : variable name
+%             dimensions      : 'AxBxC...'
+%             type            : 'single', 'double', 'uint16', 'char', ...
+%             blank
 %
-%         For each variable, the data are described as
-%             Line 1 (n-1)*3+5: Variable name (e.g. 'My_Var', 'thisVar')
-%             Line 2 (n-1)*3+6: Data dimensions (format: AxBxC..., e.g. '1x3', '12x4x234')
-%             Line 3 (n-1)*3+7: Data type (e.g. 'single','double', 'uint18','char')
-%             Line 4 (n-1)*3+8: blank
+%         Data section (IEEE little-endian binary)
+%           Native numeric/char data are written directly. A type suffix of
+%           '[min max]' triggers quantization via num2intrange. Non-native
+%           data types (table, struct, cell, ...) are serialized as uint8
+%           byte streams.
 %
-%         NOTE: If the data type is indexed to an integer, the data-type will be
-%         followed by a range (physical min/max) in brackets (e.g. [-3000 3000]).
-%         If the data passed are double, then they will be converted automatically.
+%   See also: MBFread, num2intrange, intrange2num
 %
-%     Data Section:
-%         For each variable, the data are written in the specified type in binary (IEEE little endian).
-%
-%         NOTE: Variables can be any set of acceptable MATLAB data type. Native IO data types (e.g. double, uint18, char)
-%         will be written as specified but others (e.g. table, struct, cell array, etc.) will be converted into
-%         serialized uint8 byteStream format.
-%
-%   Copyright 2024 Michael J. Prerau Laboratory. - http://www.sleepEEG.org
-%   Author: Michael J. Prerau, Ph.D.
-%
-%   Last modified 02/22/2021
-%% ********************************************************************
+%   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
+%        Source: https://github.com/preraulab/labcode_main
+
 %Get number of variables
 num_vars = length(vars);
 

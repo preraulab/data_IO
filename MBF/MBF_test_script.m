@@ -1,3 +1,24 @@
+%MBF_TEST_SCRIPT  Benchmark MBF read/write throughput vs. native .mat for EEG-size data
+%
+%   Usage:
+%       run MBF_test_script
+%
+%   Inputs:
+%       none
+%
+%   Outputs:
+%       none (prints timing comparison to the command window)
+%
+%   Notes:
+%       Creates large random arrays, writes and reads them in both MBF
+%       and .mat formats, reports the relative read/write speedup, then
+%       deletes the temporary files.
+%
+%   See also: MBFread, MBFwrite
+%
+%   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
+%        Source: https://github.com/preraulab/labcode_main
+
 clear;
 clc;
 
