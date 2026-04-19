@@ -1,20 +1,25 @@
 function out=bytestream_load(filename,varargin)
-%BYTESTREAM_LOAD  Load data from bytestream file
+%BYTESTREAM_LOAD  Load variables stored as uint8 byte streams from a .mat file
 %
 %   Usage:
-%   S=bytestream_load(filename, <variables>)
+%       S = bytestream_load(filename, var1, var2, ...)
 %
-%   Input:
-%   filename: filename as a string
-%   <variables>: list of variables to load: VAR1, VAR2, ...
+%   Inputs:
+%       filename : char - path to .mat file -- required
+%       varargin : char - names of byte-stream variables to load -- required
 %
-%   Output:
-%   S: a struct with the variables as fieldnames with associated values
+%   Outputs:
+%       out : struct - fields named per requested variable, values are deserialized arrays
 %
-%   Copyright 2024 Michael J. Prerau, Ph.D.
+%   Notes:
+%       Variables are loaded into the base workspace in addition to the
+%       returned struct. Any requested variable that is not a uint8 byte
+%       stream is skipped with a warning.
 %
-%   Last modified 12/05/2017
-%% ********************************************************************
+%   See also: bytestream_save, getArrayFromByteStream
+%
+%   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
+%        Source: https://github.com/preraulab/labcode_main
 
 %Check inputs
 if any(~cellfun(@isstr,varargin))

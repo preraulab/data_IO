@@ -1,19 +1,21 @@
 function [stages,times] = load_vmrk_scoring(filename,Fs)
-% load_vmrk_scoring: extract stages and times from vmrk scoring file
+%LOAD_VMRK_SCORING  Extract stages and times from a BrainVision .vmrk scoring file
 %
-% Inputs:
-%       filename: char - full filepath to vmrk 
-%       Fs: double - sampling frequency
+%   Usage:
+%       [stages, times] = load_vmrk_scoring(filename, Fs)
 %
-% Outputs:
-%       stages: 1D double - vector indicating stage at each time in times (5=WAKE,4=REM,
-%                           3=NREM1,2=NREM2,1=NREM3,0=Undefined)
-%       times: 1D double - vector of timestamps for stages (seconds)
+%   Inputs:
+%       filename : char - full filepath to .vmrk file -- required
+%       Fs       : double - sampling frequency in Hz -- required
 %
-%   Copyright 2024 Michael J. Prerau, Ph.D. - http://www.sleepEEG.org
-%   Last modified 
-%       06/03/2022 - created - Tom & Mike
-%% ********************************************************************
+%   Outputs:
+%       stages : Nx1 double - stage at each time (5=Wake, 4=REM, 3=N1, 2=N2, 1=N3, 0=Undefined)
+%       times  : Nx1 double - timestamps for stages (seconds)
+%
+%   See also: import_vmrk, read_staging
+%
+%   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
+%        Source: https://github.com/preraulab/labcode_main
 
 % Load vmrk table
 vmrk_table = import_vmrk(filename);
