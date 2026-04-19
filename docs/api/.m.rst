@@ -1,0 +1,6 @@
+.m
+==
+
+.. mat:currentmodule:: xml2struct
+
+.. mat:autofunction:: .m
