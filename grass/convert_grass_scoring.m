@@ -1,7 +1,31 @@
 function [ stages, notation, start_time ] = convert_grass_scoring(fname)
-%CONVERT_GRASS_SCORING Extracts sleep stages and notation from GRASS CSV
-%text files
-%  [ stages, notation, start_time ] = convert_grass_scoring(fname)
+%CONVERT_GRASS_SCORING  Extract sleep stages and notation from a GRASS CSV text file
+%
+%   Usage:
+%       [stages, notation, start_time] = convert_grass_scoring(fname)
+%
+%   Inputs:
+%       fname : char - path to GRASS comment/scoring CSV -- required
+%
+%   Outputs:
+%       stages     : struct with fields
+%                       - stage : 1xN double - stage code (5=Wake, 4=REM, 3=N1, 2=N2, 1=N3, 0=Other)
+%                       - time  : 1xN double - stage onset time in seconds from recording start
+%       notation   : struct with fields
+%                       - time : 1xM double - annotation times in seconds
+%                       - text : 1xM cell of char - annotation text
+%       start_time : 1x3 double - [hour minute second] of first timestamp in file
+%
+%   Notes:
+%       Time stamps are parsed with datetime using 'HH:mm:ss' and wrap
+%       across midnight via cumulative modulo of the time-of-day
+%       differences.
+%
+%   See also: readgrassstaging, read_staging
+%
+%   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
+%        Source: https://github.com/preraulab/labcode_main
+
 [comments, timestamps, ttimes]=convert_grass_comments(fname);
 
 s=1;
@@ -29,8 +53,9 @@ for i=1:length(comments)
         s=s+1;
     else
         if n==1
-            [~, hh, mm, ss]=hmstext2seconds({ttimes{1}});
-            start_time=[hh mm ss];
+            clean_first = regexprep(ttimes{1}, '[^\d:.]', '');
+            dt_first = datetime(clean_first, 'InputFormat', 'HH:mm:ss');
+            start_time = [hour(dt_first) minute(dt_first) second(dt_first)];
         end
         
         ctime(n)=timestamps(i);
@@ -92,44 +117,8 @@ comments{i}=tline(cinds);
 end
 
 %Compute the total time in seconds, adjusting for crossing days
-timestamps=hmstext2seconds(ttimes);
-end
-
-function [seconds, hh, mm, ss]=hmstext2seconds(hmstext)
-
-%Hours
-hh=zeros(1,length(hmstext));
-%Minutes
-ss=hh;
-%Seconds
-mm=hh;
-
-%Total seconds
-totalsecs=hh;
-
-%Loop through each cell of text
-for i=1:length(hmstext)
-    %Extract the hours minutes and seconds
-    ctime=fixstring(hmstext{i});
-    
-    tfields=strfind(ctime,':');
-    
-    
-    h=str2double(deblank(ctime(1:tfields(1)-1)));
-    hh(i)=h(~isnan(h));
-    m=str2double(deblank(ctime(tfields(1)+1:tfields(2)-1)));
-    mm(i)=m(~isnan(m));
-    s=str2double(deblank(ctime(tfields(2)+1:end)));
-    ss(i)=s(~isnan(m));
-end
-
-%Compute the total time of the hour of the day
-totalsecs=ss+mm*60+hh*3600;
-
-%Convert to seconds with proper adjustment for overlappingd days
-seconds=[0 cumsum(mod(diff(totalsecs),3600*24))];
-end
-
-function s_out = fixstring(s_in)
-s_out=s_in(double(s_in) >= 46 & double(s_in)<=58);
+cleaned = regexprep(ttimes, '[^\d:.]', '');
+dt = datetime(cleaned, 'InputFormat', 'HH:mm:ss');
+totalsecs = seconds(timeofday(dt));
+timestamps = [0, cumsum(mod(diff(totalsecs), 86400))];
 end
