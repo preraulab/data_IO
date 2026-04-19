@@ -1,78 +1,101 @@
 API Reference
 =============
 
-Auto-generated reference for ``data_io``.
+BrainVision/bvaloader
+---------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   api/bva_epoch
+   api/bva_epoch2
+   api/bva_loadeeg
+   api/bva_loadsubject
+   api/bva_readheader
+   api/bva_readmarker
+   api/bva_rt
 
 BrainVision
 -----------
 
-.. mat:module:: BrainVision
+.. toctree::
+   :maxdepth: 1
 
-.. mat:autofunction:: import_vmrk
-.. mat:autofunction:: load_vmrk_scoring
-
-BrainVision/bvaloader
----------------------
-
-.. mat:module:: BrainVision.bvaloader
-
-.. mat:autofunction:: bva_epoch
-.. mat:autofunction:: bva_epoch2
-.. mat:autofunction:: bva_loadeeg
-.. mat:autofunction:: bva_loadsubject
-.. mat:autofunction:: bva_readheader
-.. mat:autofunction:: bva_readmarker
-.. mat:autofunction:: bva_rt
-
-EDF
----
-
-.. mat:module:: EDF
-
-.. mat:autofunction:: blockEdfLoad
-.. mat:autofunction:: blockEdfWrite
-
-MBF
----
-
-.. mat:module:: MBF
-
-.. mat:autofunction:: MBF_test_script
-.. mat:autofunction:: MBFread
-.. mat:autofunction:: MBFwrite
-.. mat:autofunction:: intrange2num
-.. mat:autofunction:: num2intrange
+   api/import_vmrk
+   api/load_vmrk_scoring
 
 bytestream
 ----------
 
-.. mat:module:: bytestream
+.. toctree::
+   :maxdepth: 1
 
-.. mat:autofunction:: bytestream_load
-.. mat:autofunction:: bytestream_save
-.. mat:autofunction:: isIOdatatype
+   api/bytestream_load
+   api/bytestream_save
+   api/isIOdatatype
+
+EDF/EDF de-identify
+-------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   api/EDF_deidentify
+   api/EDF_read
+
+EDF
+---
+
+.. toctree::
+   :maxdepth: 1
+
+   api/blockEdfLoad
+   api/blockEdfWrite
 
 grass
 -----
 
-.. mat:module:: grass
+.. toctree::
+   :maxdepth: 1
 
-.. mat:autofunction:: convert_grass_scoring
-.. mat:autofunction:: readgrassstaging
+   api/convert_grass_scoring
+   api/readgrassstaging
 
 logfiles
 --------
 
-.. mat:module:: logfiles
+.. toctree::
+   :maxdepth: 1
 
-.. mat:autofunction:: create_log
-.. mat:autofunction:: generate_run_log
+   api/create_log
+   api/generate_run_log
+
+MBF
+---
+
+.. toctree::
+   :maxdepth: 1
+
+   api/intrange2num
+   api/MBF_test_script
+   api/MBFread
+   api/MBFwrite
+   api/num2intrange
 
 xml2struct/archive
 ------------------
 
-.. mat:module:: xml2struct.archive
+.. toctree::
+   :maxdepth: 1
 
-.. mat:autofunction:: xml2struct
-.. mat:autofunction:: xml2struct_mex
+   api/xml2struct
+   api/xml2struct_mex
+
+xml2struct
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   api/.m
 
