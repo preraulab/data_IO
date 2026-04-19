@@ -91,11 +91,3 @@ xml2struct/archive
    api/xml2struct
    api/xml2struct_mex
 
-xml2struct
-----------
-
-.. toctree::
-   :maxdepth: 1
-
-   api/.m
-
