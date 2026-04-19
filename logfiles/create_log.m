@@ -42,7 +42,6 @@ function [run_ID, fname] = create_log(var_names, varargin)
 %   See also: generate_run_log, struct2codestr
 %
 %   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
-%        Source: https://github.com/preraulab/labcode_main
 
 % Generate example data
 if nargin == 0

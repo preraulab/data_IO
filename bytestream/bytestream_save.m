@@ -18,7 +18,6 @@ function bytestream_save(filename,varargin)
 %   See also: bytestream_load, getByteStreamFromArray
 %
 %   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
-%        Source: https://github.com/preraulab/labcode_main
 
 %Check inputs
 if any(~cellfun(@isstr,varargin))

@@ -36,7 +36,6 @@ function [header, out] = MBFread(filename)
 %   See also: MBFwrite, intrange2num, num2intrange
 %
 %   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
-%        Source: https://github.com/preraulab/labcode_main
 
 %Open the file for writing
 fileID = fopen(filename,'r');
