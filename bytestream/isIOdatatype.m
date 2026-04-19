@@ -14,7 +14,6 @@ function result = isIOdatatype(typestr)
 %   See also: bytestream_save, bytestream_load, MBFwrite
 %
 %   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
-%        Source: https://github.com/preraulab/labcode_main
 
 nativetypes = ...
     {'uint',...

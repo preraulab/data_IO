@@ -24,7 +24,6 @@ function [ stages, notation, start_time ] = convert_grass_scoring(fname)
 %   See also: readgrassstaging, read_staging
 %
 %   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
-%        Source: https://github.com/preraulab/labcode_main
 
 [comments, timestamps, ttimes]=convert_grass_comments(fname);
 

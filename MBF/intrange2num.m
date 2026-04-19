@@ -26,7 +26,6 @@ function out = intrange2num(index_values, data_type, data_range)
 %   See also: num2intrange, MBFread, MBFwrite
 %
 %   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
-%        Source: https://github.com/preraulab/labcode_main
 
 %Cast back into double for precision
 index_values = double(index_values);

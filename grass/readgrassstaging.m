@@ -25,7 +25,6 @@ function [stage, events, comments, comment_times]=readgrassstaging(filename,save
 %   See also: convert_grass_scoring, read_staging
 %
 %   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
-%        Source: https://github.com/preraulab/labcode_main
 
 if strfind(filename,'xls')
     %Read in the excel file

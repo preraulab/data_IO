@@ -35,7 +35,6 @@ function [run_ID, fname] = generate_run_log(structs, struct_names, varargin)
 %   See also: create_log, struct2codestr
 %
 %   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
-%        Source: https://github.com/preraulab/labcode_main
 
 run_ID = '';
 

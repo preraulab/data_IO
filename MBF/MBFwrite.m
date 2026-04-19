@@ -39,7 +39,6 @@ function MBFwrite(filename, vars, var_names, var_types, file_info)
 %   See also: MBFread, num2intrange, intrange2num
 %
 %   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
-%        Source: https://github.com/preraulab/labcode_main
 
 %Get number of variables
 num_vars = length(vars);

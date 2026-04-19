@@ -18,7 +18,6 @@ function vmrk_table = import_vmrk(filename, dataLines)
 %   See also: load_vmrk_scoring, readtable
 %
 %   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
-%        Source: https://github.com/preraulab/labcode_main
 
 %% Input handling
 

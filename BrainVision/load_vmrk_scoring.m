@@ -15,7 +15,6 @@ function [stages,times] = load_vmrk_scoring(filename,Fs)
 %   See also: import_vmrk, read_staging
 %
 %   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
-%        Source: https://github.com/preraulab/labcode_main
 
 % Load vmrk table
 vmrk_table = import_vmrk(filename);

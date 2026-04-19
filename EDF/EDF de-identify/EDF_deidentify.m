@@ -21,7 +21,6 @@ function EDF_deidentify(filename, copy_file)
 %   See also: EDF_read, blockEdfLoad
 %
 %   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
-%        Source: https://github.com/preraulab/labcode_main
 
 %Sets default to copy file
 if nargin == 1

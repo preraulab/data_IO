@@ -17,7 +17,6 @@
 %   See also: MBFread, MBFwrite
 %
 %   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
-%        Source: https://github.com/preraulab/labcode_main
 
 clear;
 clc;

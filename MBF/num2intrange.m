@@ -30,7 +30,6 @@ function out = num2intrange(values, data_type, data_range)
 %   See also: intrange2num, MBFread, MBFwrite
 %
 %   ∿∿∿  Prerau Laboratory MATLAB Codebase · sleepEEG.org  ∿∿∿
-%        Source: https://github.com/preraulab/labcode_main
 
 %Get data type index range
 if isinttype(data_type) %Check if valid int type
